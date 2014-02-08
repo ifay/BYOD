@@ -1,0 +1,7 @@
+bin
+armeabi
+x86
+obj
+local.properties
+gen
+libs/*.properties
