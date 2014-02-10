@@ -1,15 +1,22 @@
 package com.byod;
 
-import android.os.Bundle;
+import com.byod.device.DeviceUtils;
+
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+    private TextView tv = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        initView();
+        tv.setText(DeviceUtils.getInstance(this).getIMEI()+"\n"+
+                DeviceUtils.getInstance(this).getIMSI()+"\n"+
+                DeviceUtils.getInstance(this).getTEL());
     }
 
     @Override
@@ -19,4 +26,8 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    private void initView() {
+        setContentView(R.layout.activity_main);
+        tv = (TextView)findViewById(R.id.textview);
+    }
 }

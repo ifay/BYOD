@@ -6,7 +6,9 @@ import android.telephony.TelephonyManager;
 public class DeviceUtils {
 
     public static DeviceUtils sInstance = null;
-    public static String sDeviceID = null;  //IMEI ***  TelephonyManager.getDeviceId()
+    public static String IMEI = null;   //device id: 对于三星测试机正确，对于htc显式的是MEID
+    public static String IMSI = null;
+    public static String TEL = null;
 
     public static DeviceUtils getInstance (Context context){
         if (sInstance == null) {
@@ -16,16 +18,24 @@ public class DeviceUtils {
     }
 
     private DeviceUtils(Context context) {
-        // TODO init works
         TelephonyManager tm = (TelephonyManager) context
                 .getSystemService(Context.TELEPHONY_SERVICE);
-        sDeviceID = tm.getDeviceId();
+        IMEI = tm.getDeviceId();
+        //IMSI = tm.getSimSerialNumber();
+        IMSI = tm.getSubscriberId();    //for GSM phone only TODO
+        TEL = tm.getLine1Number();  //maybe null
     }
 
-    /*
-     * notice: android.permission.READ_PHONE_STATE 
-     */
-    public static String getDeviceID() {
-        return sDeviceID;
+    public String getIMEI() {
+        return IMEI;
+    }
+
+
+    public String getIMSI() {
+        return IMSI;
+    }
+
+    public String getTEL() {
+        return TEL;
     }
 }
