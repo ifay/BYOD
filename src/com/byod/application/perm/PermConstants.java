@@ -1,8 +1,10 @@
 package com.byod.application.perm;
 
+import java.util.Arrays;
+
 import android.Manifest.permission;
 
-public class PermCosntants {
+public class PermConstants {
 
     /*
      * 敏感权限定义：
@@ -47,15 +49,20 @@ public class PermCosntants {
      */
 
     public static final String[] PERMS_SENSTIVE = {
-        permission.READ_PHONE_STATE,
+        permission.READ_SMS,
+        permission.SEND_SMS,
+        permission.WRITE_SMS,
+        permission.CALL_PHONE,
+        permission.CALL_PRIVILEGED,
+        permission.READ_CONTACTS,
+        permission.WRITE_CONTACTS,
+        permission.READ_PROFILE,
+        permission.WRITE_PROFILE,
         permission.ACCESS_FINE_LOCATION,
         permission.ACCESS_COARSE_LOCATION,
-        permission.READ_CONTACTS,
-        permission.READ_CALENDAR,
-        permission.READ_SMS,
-        permission.USE_CREDENTIALS,
-        permission.SEND_SMS,
-        permission.WRITE_SMS
+        permission.ACCESS_NETWORK_STATE,
+        permission.ACCESS_WIFI_STATE,
+        permission.INTERNET
         /*to be continued*/};
 
     public static final String[] PERMS_SMS = {
@@ -85,4 +92,13 @@ public class PermCosntants {
         permission.ACCESS_NETWORK_STATE,
         permission.ACCESS_WIFI_STATE,
         permission.INTERNET};
+    
+    static {
+        Arrays.sort(PERMS_SENSTIVE);
+        Arrays.sort(PERMS_SMS);
+        Arrays.sort(PERMS_CALL);
+        Arrays.sort(PERMS_CONTACT);
+        Arrays.sort(PERMS_LOCATION);
+        Arrays.sort(PERMS_NETWORKS);
+    }
 }
