@@ -10,6 +10,7 @@
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:name="com.byod.BYODApplication"
@@ -17,15 +18,29 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!--欢迎页面 -->
         <activity
             android:name="com.byod.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--注册页面 -->
+        <activity 
+            android:name="com.byod.application.UserRegisterWebview"
+            >
+        </activity>
+
+        <!-- service monitor the top task activity -->
+        <service 
+            android:name="com.byod.application.watcher.AppWatcherService" >
+            <intent-filter >
+                <action android:name="com.byod.action.START" />
+            </intent-filter>
+        </service>
     </application>
 
 

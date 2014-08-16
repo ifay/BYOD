@@ -8,10 +8,18 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.byod.MainActivity" >
 
+    <Button
+        android:id="@+id/register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
     <TextView
         android:id="@+id/textview"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/register"/>
+
 
     <ListView
         android:id="@+id/lv"

@@ -3,16 +3,23 @@ package com.byod;
 
 import java.util.ArrayList;
 
+import org.w3c.dom.UserDataHandler;
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout.LayoutParams;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,13 +30,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.byod.application.UserRegisterWebview;
 import com.byod.application.appmanager.AppManager;
+import com.byod.application.watcher.AppWatcherService;
 import com.byod.device.DeviceUtils;
 
 public class MainActivity extends Activity implements OnItemClickListener {
@@ -37,14 +47,27 @@ public class MainActivity extends Activity implements OnItemClickListener {
     // views
     private TextView tv = null;
     private ListView lv = null;
+    private Button register = null;
 
     private MyAdapter mAdapter;
     private ArrayList<PackageInfo> mMaliciousAppList;
-    
+
     private Handler mHandler;
+    private AppWatcherService.MyBinder mBinder;
 
     // test------
     private ActivityManager mActivityManager;
+    private ServiceConnection serviceConn = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+        
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBinder = (AppWatcherService.MyBinder)service;
+            mBinder.getRunningServices();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +75,16 @@ public class MainActivity extends Activity implements OnItemClickListener {
         //TODO 用Handler处理，不然加载速度太慢
         mMaliciousAppList = AppManager.getInstance().getSensitiveApplications(false);
         initView();
+
         // 获得设备ID
          tv.setText(DeviceUtils.getInstance(this).getIMEI()+"\n"+
          DeviceUtils.getInstance(this).getIMSI()+"\n"+
          DeviceUtils.getInstance(this).getTEL());
+
+         //开启监控---should start after login
+         Intent service = new Intent(this,AppWatcherService.class);
+//         startService(service);
+         bindService(service, serviceConn, BIND_ABOVE_CLIENT);
     }
 
     @Override
@@ -69,6 +98,17 @@ public class MainActivity extends Activity implements OnItemClickListener {
         setContentView(R.layout.activity_main);
         tv = (TextView) findViewById(R.id.textview);
         lv = (ListView) findViewById(R.id.lv);
+        //注册
+        register = (Button) findViewById(R.id.register);
+        register.setOnClickListener(new View.OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                Intent regIntent = new Intent(MainActivity.this,UserRegisterWebview.class);
+                startActivity(regIntent);
+            }
+        });
         mAdapter = new MyAdapter(this);
         lv.setAdapter(mAdapter);
         lv.setOnItemClickListener(this);
@@ -78,22 +118,23 @@ public class MainActivity extends Activity implements OnItemClickListener {
     // 将来可以做成一个服务，持续监控topActivity
     // TODO 监控service
     private void testSth() {
-        // mActivityManager =
-        // (ActivityManager)this.getSystemService("activity");
-        // ComponentName topActivity =
-        // mActivityManager.getRunningTasks(1).get(0).topActivity;
-        // Log.d("test",topActivity.getPackageName());
-        // tv.setText(topActivity.getPackageName());
+//         mActivityManager = (ActivityManager)this.getSystemService("activity");
+//         ComponentName topActivity = mActivityManager.getRunningTasks(1).get(0).topActivity;
+//         Log.d("test",topActivity.getPackageName());
+//         tv.setText(topActivity.getPackageName());
     }
-    
-    //弹窗显式的是权限值，而非名称
+
+    //弹窗显式的是权限值，而非名称 TODO 隐藏的方法AppSecurity***，或者自己定义权限名称
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String[] perms = mMaliciousAppList.get(position).requestedPermissions;
+        //data src
+    	String[] perms = mMaliciousAppList.get(position).requestedPermissions;
 
         LinearLayout permView = new LinearLayout(this);
         permView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+        permView.setBackgroundColor(Color.WHITE);
         ListView permListView = new ListView(this);
+        permListView.setBackgroundColor(Color.WHITE);
         permListView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, perms));
         permView.addView(permListView);
         final AlertDialog dlg = new AlertDialog.Builder(this)
@@ -158,7 +199,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
             ApplicationInfo ai = pi.applicationInfo;
             Drawable icon = ai.loadIcon(mContext.getPackageManager());
             holder.icon.setImageDrawable(icon);
-            holder.pkgName.setText(pi.packageName);
+            //get app name
+            holder.pkgName.setText(pi.applicationInfo.loadLabel(MainActivity.this.getPackageManager()));
         }
 
         @Override

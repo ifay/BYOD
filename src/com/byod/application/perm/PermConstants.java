@@ -56,8 +56,8 @@ public class PermConstants {
         permission.CALL_PRIVILEGED,
         permission.READ_CONTACTS,
         permission.WRITE_CONTACTS,
-        permission.READ_PROFILE,
-        permission.WRITE_PROFILE,
+//        permission.READ_PROFILE,
+//        permission.WRITE_PROFILE,
         permission.ACCESS_FINE_LOCATION,
         permission.ACCESS_COARSE_LOCATION,
         permission.ACCESS_NETWORK_STATE,
@@ -80,9 +80,10 @@ public class PermConstants {
 
     public static final String[] PERMS_CONTACT = {
         permission.READ_CONTACTS,
-        permission.WRITE_CONTACTS,
-        permission.READ_PROFILE,
-        permission.WRITE_PROFILE};
+        permission.WRITE_CONTACTS//,
+//        permission.READ_PROFILE,
+//        permission.WRITE_PROFILE
+        };
 
     public static final String[] PERMS_LOCATION = {
         permission.ACCESS_FINE_LOCATION,
