@@ -40,9 +40,15 @@ import android.widget.Toast;
 import com.byod.application.UserRegisterWebview;
 import com.byod.application.appmanager.AppManager;
 import com.byod.application.watcher.AppWatcherService;
-import com.byod.device.DeviceUtils;
+import com.byod.utils.DeviceUtils;
 
-public class MainActivity extends Activity implements OnItemClickListener {
+/**
+ * 
+ * @author ifay
+ *
+ * 主要测试页面，显示所有不安全权限应用，显示设备ID...
+ */
+public class MainActivity extends BYODActivity implements OnItemClickListener {
 
     // views
     private TextView tv = null;
@@ -70,21 +76,21 @@ public class MainActivity extends Activity implements OnItemClickListener {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreate() {
+        //get malicious permission apps
         //TODO 用Handler处理，不然加载速度太慢
         mMaliciousAppList = AppManager.getInstance().getSensitiveApplications(false);
         initView();
 
         // 获得设备ID
-         tv.setText(DeviceUtils.getInstance(this).getIMEI()+"\n"+
-         DeviceUtils.getInstance(this).getIMSI()+"\n"+
-         DeviceUtils.getInstance(this).getTEL());
+        tv.setText("IMEI:" + DeviceUtils.getInstance(this).getIMEI() + "\n" +
+                "IMSI:" + DeviceUtils.getInstance(this).getIMSI() + "\n" +
+                "TEL:" + DeviceUtils.getInstance(this).getTEL());
 
          //开启监控---should start after login
          Intent service = new Intent(this,AppWatcherService.class);
-//         startService(service);
-         bindService(service, serviceConn, BIND_ABOVE_CLIENT);
+         startService(service);
+//         bindService(service, serviceConn, BIND_ABOVE_CLIENT);
     }
 
     @Override

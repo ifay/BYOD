@@ -6,5 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="all_perm">全部权限</string>
     <string name="OK">确定</string>
+    <string name="passwd">密码</string>
+    <string name="account">账户</string>
 
 </resources>

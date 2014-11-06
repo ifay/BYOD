@@ -18,6 +18,9 @@ public class BYODApplication extends Application {
         super.onCreate();
         sInstance = this;
         Log.d("test","app oncreate");
+        //******TODO *********
+        //Notification
+        //http://www.oschina.net/question/234345_40111
     }
 
     
