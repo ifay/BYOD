@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 
 import com.byod.AuthenticateActivity;
 import com.byod.BYODActivity;
+import com.byod.BYODApplication;
 import com.byod.R;
 /**
  * @author ifay
@@ -27,16 +28,10 @@ public class HomeScreen extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(!BYODActivity.loggedIn) {
+        if(!BYODApplication.loggedIn) {
             Intent intent = new Intent(this, AuthenticateActivity.class);
             startActivityForResult(intent, BYODActivity.REQUEST_AUTH_CODE);
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        BYODActivity.loggedIn = false;
     }
 
     @Override
@@ -48,7 +43,7 @@ public class HomeScreen extends FragmentActivity {
         }
 
         if (requestCode == BYODActivity.REQUEST_AUTH_CODE) {
-            BYODActivity.loggedIn = data.getBooleanExtra("AuthResult", false);
+            BYODApplication.loggedIn = data.getBooleanExtra("AuthResult", false);
         }
 
         super.onActivityResult(requestCode, resultCode, data);

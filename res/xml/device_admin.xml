@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-policies>
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android"><uses-policies>
         <limit-password />
-    </uses-policies>
+
+        <watch-login />
+
+        <reset-password />
+
+        <force-lock />
+
+        <wipe-data />
+
+        <expire-password />
+
+        <encrypted-storage />
+
+        <disable-camera />
+
+        </uses-policies>
+
 </device-admin>
+<!-- 
+1. reset-pwd
+2. force-lock
+3. wipe-data
+4.disable-camera
+5.refresh GPS
+ -->

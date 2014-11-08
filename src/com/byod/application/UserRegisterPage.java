@@ -26,7 +26,7 @@ import com.byod.R;
  * 
  * TODO 考虑把登陆INFO的方法做成服务？？还是直接用WebView展示？
  */
-public class UserRegisterWebview extends Activity {
+public class UserRegisterPage extends Activity {
 
     private static final String LOG_TAG = "UserRegisterWebview";
     //url ip通过由界面输入。后面的子页面做成key-value对，存于文件中，由公司配置，可推送更新。
@@ -71,7 +71,7 @@ public class UserRegisterWebview extends Activity {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                     String failingUrl) {
-                Toast.makeText(UserRegisterWebview.this, "Oh no:" + description, Toast.LENGTH_SHORT)
+                Toast.makeText(UserRegisterPage.this, "Oh no:" + description, Toast.LENGTH_SHORT)
                         .show();
             }
         });

@@ -11,6 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Comparator;
 
+/**
+ * appsLoader 应该只加载特定的应用
+ * @changedBy ifay
+ *
+ */
 public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
     ArrayList<AppModel> mInstalledApps;
 
@@ -22,8 +27,11 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
         mPm = context.getPackageManager();
     }
 
+    //TOChange: launcher 内部应该只显示企业指定应用
     @Override
     public ArrayList<AppModel> loadInBackground() {
+        
+        
         // retrieve the list of installed applications
         List<ApplicationInfo> apps = mPm.getInstalledApplications(0);
 

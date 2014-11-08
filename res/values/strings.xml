@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">BYODemo</string>
+    <string name="app_name">BYOD</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="all_perm">全部权限</string>
     <string name="OK">确定</string>
     <string name="passwd">密码</string>
     <string name="account">账户</string>
+    <string name="admin_desc">需要允许设备管理器方可安全访问企业应用</string>
 
 </resources>

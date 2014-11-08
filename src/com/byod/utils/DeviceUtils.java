@@ -15,9 +15,10 @@ import android.telephony.TelephonyManager;
  * 
  * @author ifay
  * 单例使用
- * 提供设备唯一标识
- * 第一次使用，将设备ID记录到sharedPreference中??
  * 
+ * 提供设备唯一标识
+ * 提供设备基本信息：OS，Version，Name
+ * 第一次使用，将设备ID记录到sharedPreference中??
  * 判断是否root
  */
 public class DeviceUtils {
