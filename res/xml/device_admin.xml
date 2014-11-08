@@ -23,6 +23,7 @@
 1. reset-pwd
 2. force-lock
 3. wipe-data
-4.disable-camera
-5.refresh GPS
+4. remove byod
+5. disable-camera
+6. refresh GPS
  -->

@@ -37,7 +37,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.byod.application.UserRegisterPage;
+import com.byod.application.UserRegisterPage1;
 import com.byod.application.appmanager.AppManager;
 import com.byod.application.watcher.AppWatcherService;
 import com.byod.utils.DeviceUtils;
@@ -111,7 +111,7 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                Intent regIntent = new Intent(MainActivity.this,UserRegisterPage.class);
+                Intent regIntent = new Intent(MainActivity.this,UserRegisterPage1.class);
                 startActivity(regIntent);
             }
         });

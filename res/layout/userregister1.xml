@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/userRegisterView"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+</WebView>-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="19dp"
+        android:text="@string/next" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userAccount"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="125dp"
+        android:ems="15"
+        android:text="@string/fill_account" />
+
+    <EditText
+        android:id="@+id/userAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="17dp"
+        android:ems="10" />
+
+</RelativeLayout>
