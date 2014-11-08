@@ -20,7 +20,7 @@ public abstract class BYODActivity extends Activity {
 
     public static boolean loggedIn = false;
     public static int REQUEST_AUTH_CODE = 1;
-
+    public ExitListenerReceiver exitre;
 
     public abstract void onCreate();
     @Override
@@ -34,17 +34,21 @@ public abstract class BYODActivity extends Activity {
      * 注册退出事件监听
      */
     private void regListener() {
-        ExitListenerReceiver exitre = new ExitListenerReceiver();
+        exitre = new ExitListenerReceiver();
         IntentFilter intentfilter = new IntentFilter();
         intentfilter.addAction(this.getPackageName() + "."
                              + CommonUtils.ExitListenerReceiver);
         this.registerReceiver(exitre, intentfilter);
      }
 
+    private void unRegListener( ExitListenerReceiver receiver) {
+        if (receiver != null) {
+            this.unregisterReceiver(receiver);
+        }
+    }
     class ExitListenerReceiver extends BroadcastReceiver {
             @Override
              public void onReceive(Context context, Intent i) {
-                unregisterReceiver(this);
                 ((Activity) context).finish();
             }
     }
@@ -85,5 +89,6 @@ public abstract class BYODActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         loggedIn = false;
+        unRegListener(exitre);
     }
 }
