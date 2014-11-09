@@ -4,9 +4,9 @@ package com.byod;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.admin.DevicePolicyManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.byod.application.UserRegisterPage1;
 import com.byod.launcher.HomeScreen;
+import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
@@ -44,8 +45,8 @@ public class AuthenticateActivity extends BYODActivity {
     private static final int MSG_NOT_COMPLIANCED = 1001; // 合规性检测失败
     private static final int MSG_NOT_ADMIN = 1002; // 未开启设备管理器
     private static final int MSG_AUTH_SUCCESS = 2000;
-    private static final int MSG_AUTH_USER_FAILED = 2001; // 用户认证失败
-    private static final int MSG_AUTH_DEVICE_FAILED = 2002; // 非登记的设备
+    private static final int MSG_AUTH_FAILED = 2001; // 认证失败
+    private static final int MSG_AUTH_NOT_PAIRED = 2002; // 设备和用户不匹配
     private static final int MSG_AUTH_NO_POLICY_RECORD = 3000;    //无策略记录，表示未登记设备
 
     private Handler handler = new Handler() {
@@ -57,7 +58,10 @@ public class AuthenticateActivity extends BYODActivity {
             switch (msg.what) {
                 case MSG_NOT_COMPLIANCED:
                     // 合规性检测失败,退出应用
-                    Toast.makeText(mActivity, "设备不符合安全规定，应用即将退出", Toast.LENGTH_LONG).show();
+                    Bundle data = msg.getData();
+                    int checkResult = data.getInt(PolicyUtils.POLICY_RESULT);   //TODO 如何和策略名對應上
+                    Toast.makeText(mActivity, "设备不符合安全规定" +checkResult +
+                    		"，应用即将退出", Toast.LENGTH_LONG).show();
                     setResult(Activity.RESULT_CANCELED, intent);
                     CommonUtils.exitBYOD(mActivity);
                     break;
@@ -85,20 +89,14 @@ public class AuthenticateActivity extends BYODActivity {
                         mActivity.finish();
                     }
                     break;
-                case MSG_AUTH_USER_FAILED:
+                case MSG_AUTH_FAILED:
                     // 用户认证失败
                     Log.d("AuthenticateActivity", "MSG_AUTH_USER_FAILED");
                     sAuthFailTime += 1;
                     popLockUserDialog();
                     break;
-                case MSG_AUTH_DEVICE_FAILED:
-                    // 设备认证失败
-                    Log.d("AuthenticateActivity", "MSG_AUTH_DEVICE_FAILED");
-                    sAuthFailTime += 1;
-                    popLockUserDialog();
-                    break;
                 case MSG_AUTH_NO_POLICY_RECORD:
-                    //无策略记录
+                    //无策略记录，进入RegisterPage1
                     Log.d("AuthenticateActivity", "MSG_AUTH_NO_POLICY_RECORD");
                     i = new Intent(mActivity, UserRegisterPage1.class);
                     startActivity(i);
@@ -135,6 +133,27 @@ public class AuthenticateActivity extends BYODActivity {
             }
             keyboardUtil.showKeyboard();
             ((EditText) v).setInputType(inputType);
+            
+            if (v == passwdView) {
+                final String userAccount = accountView.getText().toString().trim();
+                final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
+                // 检查用户是否和设备绑定
+                Thread t = new Thread(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        boolean paired = AuthUtils.isUserAndDeviceBinded(userAccount, deviceID);
+                        if ( !paired) {
+                            handler.sendEmptyMessage(MSG_AUTH_NOT_PAIRED);
+                            //用户和设备不匹配，非本人设备，要求用户退出
+                            Toast.makeText(mActivity, "此设备非"+userAccount+"所属\n" +
+                                    "应用将退出...", Toast.LENGTH_LONG).show();
+                            CommonUtils.exitBYOD(mActivity);
+                        }
+                    }
+                });
+                t.start();
+            }
             return false;
         }
     };
@@ -144,23 +163,26 @@ public class AuthenticateActivity extends BYODActivity {
 
         @Override
         public void onClick(View v) {
-            // 1.检查是否激活Device admin
-            if (!PolicyUtils.isAdminActive(mActivity)) {
-                handler.sendEmptyMessage(MSG_NOT_ADMIN);
-            }
 
-            // 2. 检查设备合规性
-            // handler.sendEmptyMessage(MSG_COMPLIANCED);
-            // handler.sendEmptyMessage(MSG_NOT_COMPLIANCED);
+            //1. 对于password的字符进行加密运算
+            final String password = passwdView.getText().toString().trim();
+            final String account = accountView.getText().toString().trim();
+            final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
+            final String passwordCrypted = CommonUtils.cryptMD5(password);
 
-            // 3.TODO 对于password的字符进行加密运算
-            String password = passwdView.getText().toString().trim();
-            String account = accountView.getText().toString().trim();
-            String deviceID = DeviceUtils.getInstance(mActivity)
-                    .getsDeviceIdSHA1();
-
-            // 4.authenticate the user and device
-            /********** TODO 认证设备，用户，此处需要连WS，耗时操作 ***********/
+            
+            //2. authenticate the user and device
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (AuthUtils.login(account, passwordCrypted, deviceID) == CommonUtils.SUCCESS) {
+                        handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
+                    } else {
+                        handler.sendEmptyMessage(MSG_AUTH_FAILED);
+                    }
+                }
+            });
+            t.start();
             // send the device id and user id to server and authenticate
             handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
             // handler.sendEmptyMessage(MSG_AUTH_USER_FAILED);
@@ -173,11 +195,12 @@ public class AuthenticateActivity extends BYODActivity {
     private void popLockUserDialog() {
         Log.d("AuthenticateActivity", "popLockUserDialog");
 
-        if (sAuthFailTime > sAuthFailTime) {
+        int maxAuthTime = PolicyUtils.getPolicyInt(mActivity, PolicyUtils.PREF_PWD_TIRAL_TIME, 4);
+        if (sAuthFailTime > maxAuthTime) {
             Log.d("trial time", sAuthFailTime + "");
             AlertDialog.Builder dialog = new Builder(mActivity);
             dialog.setTitle("登录错误");
-            dialog.setMessage("登录次数超过" + PolicyUtils.sAuthMaxTime + "次\n应用将关闭");
+            dialog.setMessage("登录次数超过" + maxAuthTime + "次\n应用将关闭");
             dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -195,28 +218,38 @@ public class AuthenticateActivity extends BYODActivity {
         // auth 界面不再跳转
         BYODApplication.loggedIn = true;
         super.onResume();
-        
         intent = getIntent();
 
-        //检查本地是否有策略记录
+        //0.检查本地是否有策略记录
         if (PolicyUtils.getLatestPolicyTime(mActivity, 0L) == 0L) {
             handler.sendEmptyMessage(MSG_AUTH_NO_POLICY_RECORD);
         }
 
         // 1.检测是否开启Device admin
         if (!PolicyUtils.isAdminActive(mActivity)) {
-            PolicyUtils.ActivateDeviceAdmin(mActivity);
+            PolicyUtils.activateDeviceAdmin(mActivity);
         }
 
-        // check the device compliance TODO
-
-        // ********* TODO 进行合规性检测，放在handler中进行吧 *********//
-        // 不合规的情况下，直接退出系统
-
-        // if (!DeviceUtils.isDeviceComplianced) {
-        // handler.sendEmptyMessage(MSG_NOT_COMPLIANCED);
-        // }
-
+        // 2. check the device compliance
+        Thread t = new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+                int rst = DeviceUtils.isDeviceComplianced(mActivity);
+                if (rst == PolicyUtils.CODE_COMPLIANCED) {
+                    //handler.sendEmptyMessage(MSG_COMPLIANCED);
+                    //直接进行后续操作
+                } else {
+                    Message msg = new Message();
+                    Bundle data = new Bundle();
+                    data.putInt(PolicyUtils.POLICY_RESULT, rst);
+                    msg.setData(data);
+                    msg.what = MSG_NOT_COMPLIANCED;
+                    handler.sendMessage(msg);
+                }
+            }
+        });
+        t.start();
     }
 
     @Override

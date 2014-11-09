@@ -5,30 +5,12 @@
     android:id="@+id/userRegisterView"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
-</WebView>-->
+</WebView>
+-->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
-
-    <Button
-        android:id="@+id/next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="19dp"
-        android:text="@string/next" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/userAccount"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="125dp"
-        android:ems="15"
-        android:text="@string/fill_account" />
 
     <EditText
         android:id="@+id/userAccount"
@@ -36,7 +18,48 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="17dp"
-        android:ems="10" />
+        android:ems="10" >
+                <requestFocus />
+        </EditText>
 
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userAccount"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="75dp"
+        android:ems="15"
+        android:text="@string/fill_account" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userAccount"
+        android:layout_below="@+id/userAccount"
+        android:layout_marginTop="42dp"
+        android:ems="15"
+        android:text="@string/passwd" 
+        android:visibility="gone"/>
+
+    <EditText
+        android:id="@+id/pwd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_below="@+id/textView2"
+        android:ems="10" 
+        android:visibility="gone">
+    </EditText>
+    
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="23dp"
+        android:text="@string/next" />
+    
 </RelativeLayout>

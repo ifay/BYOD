@@ -1,7 +1,9 @@
 package com.byod.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,65 +22,53 @@ import com.byod.app.listener.MDMReceiver;
 @SuppressWarnings("static-access")
 public class PolicyUtils {
 
+    private static String TAG = "PolicyUtils";
+    public static final String POLICY_RESULT = "policy_result";
+
     //认证策略
-    public static String PREF_MAX_AUTHTIME = "max_authtime";   //最大尝试次数
-    public static String PREF_PWD_LENGTH = "pwd_length";    //密码长度
-    public static String PREF_PWD_STRENGTH = "pwd_strength";    //密码强度
-    //TODO TObeContinued
+    public static String PREF_AUTH_POLICY_TIME = "auth_policy_time";    //认证策略的创建时间
+    public static String PREF_AUTH_CHECK_DEV = "auth_check_dev";
+    public static String PREF_AUTH_CHECK_PWD = "auth_check_pwd";
+    public static String PREF_AUTH_CHECK_TEL = "auth_check_tel";
+    
+    //密码策略
+    public static String PREF_PWD_POLICY_TIME = "pwd_policy_time";  //密码策略创建时间
+    public static String PREF_PWD_SPL_CHAR_NUM = "pwd_spl_char_num";    //特殊字符数目
+    public static String PREF_PWD_EXPIRE_TIME = "pwd_expire_time";  //密码超期时间
+    public static String PREF_PWD_MAX_LENGTH = "pwd_max_length";    //密码长度
+    public static String PREF_PWD_MIN_LENGTH = "pwd_min_length";    //密码长度
+    public static String PREF_PWD_STARTBY_CHAR = "pwd_startby_char";    //密码以字母开头
+    public static String PREF_PWD_TIRAL_TIME = "pwd_trial_time";    //密码尝试次数
     
     //设备策略
+    public static String PREF_DEVICE_POLICY_TIME = "device_policy_time";  //设备策略的创建时间
     public static String PREF_OS_VERSION = "os_version";    //系统版本
     public static String PREF_OS_ISROOTED = "is_rooted";   //是否root
+    public static String PREF_DEVICE_TYPE = "device_type";  //设备类型
+    public static String PREF_DEVICE_WIFI_ENABLE = "device_wifi_enable";    //是否开启wifi
+    public static String PREF_DEVICE_G_ENABLE = "device_g_enable";    //是否开启234G
+    public static String PREF_DEVICE_BLUETOOTH_ENABLE = "device_bluetooth_enable";  //是否开启蓝牙
+    public static String PREF_DEVICE_ONLINE_MAX = "device_onlion_max";  //允许最大在线设备
+    public static String PREF_DEVICE_ACCESS_START_TIME = "device_access_start_time";    //允许开始访问的时间
+    public static String PREF_DEVICE_ACCESS_END_TIME = "device_access_end_time";    //允许访问的结束时间
     
-    
-    public static String PREF_POLICY_SYNC_TIME = "policy_sync_time";  //策略的最新同步时间
-    
-    
-    public static int sAuthMaxTime = 3;
+    public static int CODE_COMPLIANCED = 0; //满足合规性
+    public static Map<Integer,String> sPolicyResult = new HashMap<Integer, String>();
+    static{
+        sPolicyResult.put(0, "complianced");
+    };
     
     private static DevicePolicyManager dpManager;
     private static ComponentName byodAdmin;
     private static SharedPreferences sPrefs;
 
-    private static SharedPreferences initSharedPreferences(Context ctx) {
+    static SharedPreferences initSharedPreferences(Context ctx) {
         if (sPrefs == null) {
             sPrefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
         }
         return sPrefs;
     }
     
-    /**
-     * 向服务器查询用户所有设备数目
-     * @param userAccount 用户账户唯一标识，此处用邮箱
-     * @return 用户所绑定的设备数目
-     */
-    public static int getUserDeviceNum(String userAccount) {
-        //TODO
-        return 0;
-    }
-    
-    /**
-     * 对设备进行合规性检测
-     * 1.更新最新的策略:若非最新 且 更新不成功的话，不可进行后续操作, 返回 “false”
-     * 2 安全检查，不通过的话，返回错误提示（哪些安全策略未通过）。通过的话返回“true”
-     * 
-     * @param context
-     * @return
-     */
-    public static String isDeviceComplianced(Context context) {
-        if (getNewestPolicy() == CommonUtils.FAIL) {
-            return String.valueOf(CommonUtils.FAIL);
-        }
-        SharedPreferences prefs = initSharedPreferences(context);
-        
-        //遍历没用诶，需要根据每条策略的具体含义进行检测。
-        
-//        Map<String,?> policyMap = sharedPref.getAll();
-//        for(Map.Entry<String, ?> item : policyMap.entrySet()){
-//            //TODO 
-//        }
-        return String.valueOf(CommonUtils.SUCCESS);
-    }
     //device admin check
     public static boolean isAdminActive(Context context) {
         if (dpManager == null) {
@@ -91,7 +81,7 @@ public class PolicyUtils {
     }
 
 
-    public static void ActivateDeviceAdmin(Context context) {
+    public static void activateDeviceAdmin(Context context) {
         Intent i = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         if (byodAdmin == null) {
             byodAdmin = new ComponentName(context, MDMReceiver.class);
@@ -108,10 +98,16 @@ public class PolicyUtils {
      */
     public static boolean getNewestPolicy() {
         if(localPolicyIsNewest()) {
+            Log.d(TAG,"local policy is already newest");
             return true;
         }
         
         return true;
+    }
+
+    public static void getNewestPolicyByUser(String userAccount) {
+        // TODO 获取用户名下的最新策略
+        
     }
     
     /**
@@ -148,6 +144,8 @@ public class PolicyUtils {
     public static Long getLatestPolicyTime(Context cxt, Long defValue) {
         SharedPreferences prefs = initSharedPreferences(cxt);
         Log.d("null pointer", prefs==null?"null":"not null");
-        return prefs.getLong(PREF_POLICY_SYNC_TIME, defValue);
+        return prefs.getLong(PREF_DEVICE_POLICY_TIME, defValue);
     }
+
+
 }

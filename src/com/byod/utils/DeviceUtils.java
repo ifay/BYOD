@@ -1,15 +1,13 @@
 package com.byod.utils;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import com.stericson.RootTools.RootTools;
-
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+
+import com.stericson.RootTools.RootTools;
 
 /**
  * 
@@ -76,18 +74,7 @@ public class DeviceUtils {
      */
     public String getsDeviceIdMD5() {
         String longID = IMEI +IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
-
-        MessageDigest md5 = null;
-        try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch(NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        
-        md5.update(longID.getBytes());
-        byte[] md5Data = md5.digest();  //密文
-        //密文转换为十六进制字符串
-        sDeviceID = getString(md5Data);
+        sDeviceID = CommonUtils.cryptMD5(longID);
         return sDeviceID;
     }
 
@@ -96,36 +83,8 @@ public class DeviceUtils {
      */
     public String getsDeviceIdSHA1() {
         String longID = IMEI +IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
-        MessageDigest sha1 = null;
-        try {
-            sha1 = MessageDigest.getInstance("SHA-1");
-        } catch(NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        sha1.update(longID.getBytes());
-        byte[] sha1Data = sha1.digest();
-        sDeviceID = getString(sha1Data);
+        sDeviceID = CommonUtils.cryptSH1(longID);
         return sDeviceID;
-    }
-
-    private String getString(byte[] b) {
-        StringBuffer strb = new StringBuffer();
-        int temp;
-        for(int i = 0; i < b.length; i++) {
-            temp = 0xFF & b[i];
-            if (temp <= 0xF) {
-                strb.append('0');
-            }
-            strb.append(b[i]);
-        }
-        return strb.toString();
-    }
-
-    public boolean checkDeviceCompliance() {
-        //***TODO*******
-        //什么样的合规性文件？需要入参吗
-        return false;
-        
     }
 
     public String getIMEI() {
@@ -149,12 +108,34 @@ public class DeviceUtils {
         return BLUETOOTH_MAC;
     }
 
-    /**
-     * 获得伪ID
-     * @return
-     */
     public String getPseudoID() {
         return PseudoID;
+    }
+
+    /**
+         * 对设备进行合规性检测
+         * 将设备信息发送至服务器，由服务器进行检测
+         * 
+         * @param context
+         * @return 0：通过。正数：某条策略未通过
+         */
+        public static int isDeviceComplianced(Context context) {
+            SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
+            
+            //将设备信息发送至服务器，由服务器进行检测。
+            
+            return 0;
+    
+        }
+
+    /**
+     * 向服务器查询用户所有设备数目
+     * @param userAccount 用户账户唯一标识，此处用邮箱
+     * @return 用户所绑定的设备数目
+     */
+    public static int getUserDeviceNum(String userAccount) {
+        //TODO
+        return 0;
     }
 
     /**

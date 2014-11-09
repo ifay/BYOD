@@ -110,7 +110,6 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
             
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 Intent regIntent = new Intent(MainActivity.this,UserRegisterPage1.class);
                 startActivity(regIntent);
             }
@@ -211,7 +210,6 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
 
         @Override
         public void onClick(View v) {
-            // TODO Auto-generated method stub
             Toast.makeText(mContext, "onclick", Toast.LENGTH_SHORT).show();
             //TODO useless?
         }
@@ -220,7 +218,6 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
 
     @Override
     protected void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
         Log.d("test", "onDestroy");
     }
@@ -234,21 +231,18 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
 
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         Log.d("test", "onResume");
     }
 
     @Override
     protected void onStart() {
-        // TODO Auto-generated method stub
         super.onStart();
         Log.d("test", "onStart");
     }
 
     @Override
     protected void onStop() {
-        // TODO Auto-generated method stub
         super.onStop();
         Log.d("test", "onStop");
     }

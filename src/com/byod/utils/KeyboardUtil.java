@@ -149,7 +149,7 @@ public class KeyboardUtil {
     }
 
     /**
-     * 随机布局 TODO
+     * 随机布局 
      */
     private void randomKey() {
         List<Key> keyList ;

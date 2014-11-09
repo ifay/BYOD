@@ -23,7 +23,6 @@ public class BYODApplication extends Application {
 
     @Override
     public void onCreate() {
-        // TODO Auto-generated method stub
         super.onCreate();
         sInstance = this;
         regExitListener();
