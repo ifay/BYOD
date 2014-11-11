@@ -120,6 +120,8 @@ public class DeviceUtils {
          * @return 0：通过。正数：某条策略未通过
          */
         public static int isDeviceComplianced(Context context) {
+            //1.sync the newest policy
+            PolicyUtils.getNewestPolicy();
             SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
             
             //将设备信息发送至服务器，由服务器进行检测。

@@ -16,7 +16,7 @@ import android.content.Intent;
  */
 public class CommonUtils {
 
-    public static String ONLINE_SERVER = "192.168.0.106";    //TODO
+    public static String ONLINE_SERVER = "http://192.168.0.106:8080";    //TODO
     
     //退出系统receiver
     public static String ExitListenerReceiver = "ExitListenerReceiver";

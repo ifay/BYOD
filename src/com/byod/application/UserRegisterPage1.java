@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,8 +19,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byod.R;
+import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
+import com.byod.utils.KeyboardUtil;
 import com.byod.utils.PolicyUtils;
 
 /**
@@ -36,17 +40,16 @@ public class UserRegisterPage1 extends Activity {
 
     private static final String LOG_TAG = "UserRegisterPage1";
 
-    private static final int MSG_NO_DEVICE = 1000; // 用户名下没有设备
+    private static final int MSG_FIRST_DEVICE = 1000;   // 用户名下没有设备
     private static final int MSG_ADD_DEVICE = 1001;
-    private static final int MSG_AUTH_USER_SUCCESS = 2000;  //用户名，密码匹配
-    private static final int MSG_AUTH_USER_FAIL = 2001;  //用户名，密码不匹配
-    private static final int MSG_FIRST_DEVICE = 3000;    //安全策略检查通过
 
     private UserRegisterPage1 mActivity;
     private EditText userAccountET = null;
     private EditText pwdET = null;
     private TextView textView2 = null;
     private Button nextBt = null;
+    private static KeyboardUtil keyboard1 = null;
+    private static KeyboardUtil keyboard2 = null;
     private String userAccount = "";
     private String userPwd = "";
     private Handler handler = new Handler() {
@@ -58,28 +61,20 @@ public class UserRegisterPage1 extends Activity {
             switch (what) {
                 case MSG_ADD_DEVICE:
                     // 显示密码框
+                    // 弹出对话框提示是否添加
                     pwdET.setVisibility(View.VISIBLE);
+                    pwdET.setOnTouchListener(showKeyboard);
                     textView2.setVisibility(View.VISIBLE);
-                    nextBt.setText("增添此设备");
-                    //TODO 验证用户名密码
-                    break;
-                case MSG_NO_DEVICE:
-                    i = new Intent(mActivity, UserRegisterPage2.class);
-                    startActivity(i);
-                    // TODO
+                    nextBt.setOnClickListener(authAndAddDevice);
                     break;
                 case MSG_FIRST_DEVICE:
                     // 显示密码框
+                    // btn作用为：认证并跳转到完善信息页面
                     pwdET.setVisibility(View.VISIBLE);
+                    pwdET.setOnTouchListener(showKeyboard);
                     textView2.setVisibility(View.VISIBLE);
                     nextBt.setText("增添此设备并下一步");
-                    //nextBt.setOnClickListener();
-                case MSG_AUTH_USER_SUCCESS:
-                    // Popup AlertDialog, 同时进行安全性检测&增添设备
-                    addNewDeviceDialog();
-                    break;
-                case MSG_AUTH_USER_FAIL:
-                    break;
+                    nextBt.setOnClickListener(authAndJumpListener);
                 default:
                     break;
             }
@@ -89,33 +84,24 @@ public class UserRegisterPage1 extends Activity {
     private void addNewDeviceDialog() {
         AlertDialog.Builder builder = new Builder(mActivity);
         builder.setTitle("新增设备");
-        builder.setMessage("是否添加此设备为您名下的使用设备？\n添加将进行常规安全性检查\n" +
-                "取消则退出程序");
+        builder.setMessage("是否添加此设备为您名下的使用设备？");
         builder.setPositiveButton("添加", new OnClickListener() {
             Intent intent;
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Thread t = new Thread(new Runnable() {
+                Thread t = new Thread (new Runnable() {
                     
                     @Override
                     public void run() {
-                        int checkResult = DeviceUtils.isDeviceComplianced(mActivity);   //TODO 如何和策略名對應上
-                        if(checkResult > 0) {
-                           Toast.makeText(mActivity, "未同步到最新的安全策略，请检查网络连接", Toast.LENGTH_SHORT).show();
-                        } else if (checkResult == PolicyUtils.CODE_COMPLIANCED){
-                            //通过安全策略，进行注册
-                            Toast.makeText(mActivity, "通过安全策略，正在注册设备...", Toast.LENGTH_LONG).show();
-                            boolean regResult = DeviceUtils.getInstance(mActivity).registerDevice(mActivity);
-                           if (regResult == CommonUtils.SUCCESS) {
-                               //注册成功，进入登录界面
-                               setResult(Activity.RESULT_OK, mActivity.getIntent());
-                               mActivity.finish();
-                           } else {
-                               //注册失败，怎么做？？？ TODO or do nothing
-                           }
+                        //注册设备
+                        boolean result = AuthUtils.addDeviceToUser(userAccount);
+                        if (result == CommonUtils.SUCCESS) {
+                            //返回登录
+                            setResult(Activity.RESULT_OK, mActivity.getIntent());
+                            mActivity.finish();
                         } else {
-                            Toast.makeText(mActivity, "未通过安全策略:"+checkResult+"\n"+"请检查设备并重试。", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "增添设备失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -141,44 +127,130 @@ public class UserRegisterPage1 extends Activity {
         initView();
     }
 
+    //按钮功能：获取用户名下设备,并进行合规性检测
+    View.OnClickListener checkUserDeviceListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            userAccount = userAccountET.getText().toString();
+            if (userAccount.length() == 0) {
+                Toast.makeText(mActivity, "用户名为空！", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    int deviceNum = DeviceUtils.getUserDeviceNum(userAccount); // TODO fake data
+                    int complianced = DeviceUtils.isDeviceComplianced(mActivity);
+                    if (complianced == PolicyUtils.CODE_COMPLIANCED) {
+                        if (deviceNum == 0 ) {
+                            handler.sendEmptyMessage(MSG_FIRST_DEVICE);
+                        } else {
+                            handler.sendEmptyMessage(MSG_ADD_DEVICE);
+                        }
+                    } else {
+                        Toast.makeText(mActivity, "设备不符合合规策略："+ complianced+",请检查后再添加", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+            if (pwdET.getVisibility() != View.VISIBLE){
+                t.start();
+            } else{
+                userPwd = pwdET.getText().toString();
+            }
+        }
+    };
+    
+    //认证并跳转页面
+    View.OnClickListener authAndJumpListener = new View.OnClickListener() {
+        
+        @Override
+        public void onClick(View v) {
+            //Auth
+            userAccount = userAccountET.getText().toString().trim();
+            userPwd = pwdET.getText().toString();
+            if (userAccount.length() < 1 || userPwd.length() < 1) {
+                Toast.makeText(mActivity, "用户名或密码不能为空", Toast.LENGTH_SHORT).show();
+            }
+            Thread t = new Thread(new Runnable() {
+                
+                @Override
+                public void run() {
+                    String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
+                    boolean authRst = AuthUtils.login(userAccount, userPwd, deviceID);
+                    if (authRst == CommonUtils.SUCCESS) {
+                        String userID = AuthUtils.getUserID(userAccount);
+                        Intent i = new Intent(mActivity,UserRegisterPage2.class);
+                        i.putExtra("UserID",userID);
+                        startActivity(i);
+                    }
+                    
+                }
+            });
+            t.start();
+        }
+    };
+
+    //认证并新增设备
+    View.OnClickListener authAndAddDevice = new View.OnClickListener() {
+        
+        @Override
+        public void onClick(View v) {
+          //Auth
+            userAccount = userAccountET.getText().toString().trim();
+            userPwd = pwdET.getText().toString();
+            if (userAccount.length() < 1 || userPwd.length() < 1) {
+                Toast.makeText(mActivity, "用户名或密码不能为空", Toast.LENGTH_SHORT).show();
+            }
+            Thread t = new Thread(new Runnable() {
+                
+                @Override
+                public void run() {
+                    String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
+                    boolean authRst = AuthUtils.login(userAccount, userPwd, deviceID);
+                    if (authRst == CommonUtils.SUCCESS) {
+                        //dialog： if add the device
+                        addNewDeviceDialog();
+                    } else {
+                        Toast.makeText(mActivity, "用户名和密码不匹配", Toast.LENGTH_SHORT).show();
+                    }
+                    
+                }
+            });
+            t.start();
+        }
+    };
+    
+    //keyboard
+    View.OnTouchListener showKeyboard = new View.OnTouchListener() {
+        
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            int inputType = ((EditText) v).getInputType();
+            ((EditText) v).setInputType(InputType.TYPE_NULL);
+            if (v == userAccountET) {
+                if (keyboard1 == null) {
+                    keyboard1 = new KeyboardUtil(mActivity, mActivity, (EditText) v);
+                }
+                keyboard1.showKeyboard();
+            } else {
+                if (keyboard2 == null) {
+                    keyboard2 = new KeyboardUtil(mActivity, mActivity, (EditText) v);
+                }
+                keyboard2.showKeyboard();
+            }
+            ((EditText) v).setInputType(inputType);
+            return false;
+        }
+    };
+
     private void initView() {
         userAccountET = (EditText) findViewById(R.id.userAccount);
         nextBt = (Button) findViewById(R.id.next);
         pwdET = (EditText) findViewById(R.id.pwd);
+        userAccountET.setOnTouchListener(showKeyboard);
         textView2 = (TextView) findViewById(R.id.textView2);
-        nextBt.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                userAccount = userAccountET.getText().toString();
-                if (userAccount.length() == 0) {
-                    Toast.makeText(mActivity, "用户名为空！", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-               
-                Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        int deviceNum = DeviceUtils.getUserDeviceNum(userAccount); // TODO fake data
-                        if (deviceNum == 0) {
-                            PolicyUtils.getNewestPolicyByUser(userAccount);
-                            int complianced = DeviceUtils.isDeviceComplianced(mActivity);
-                            if (complianced == PolicyUtils.CODE_COMPLIANCED) {
-                                handler.sendEmptyMessage(MSG_FIRST_DEVICE);
-                            }
-                        } else {
-                            handler.sendEmptyMessage(MSG_ADD_DEVICE);
-                        }
-                    }
-                });
-                if (pwdET.getVisibility() != View.VISIBLE){
-                    t.start();
-                } else{
-                    userPwd = pwdET.getText().toString();
-                }
-            }
-        });
+        nextBt.setOnClickListener(checkUserDeviceListener);
     }
 
     @Override

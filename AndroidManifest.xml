@@ -59,6 +59,11 @@
             android:name="com.byod.application.UserRegisterPage1"
             >
         </activity>
+        <!--注册页面 -->
+        <activity 
+            android:name="com.byod.application.UserRegisterPage2"
+            >
+        </activity>
 
         <!-- service monitor the top task activity -->
         <service 

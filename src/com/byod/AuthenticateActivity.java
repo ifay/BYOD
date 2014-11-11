@@ -135,6 +135,7 @@ public class AuthenticateActivity extends BYODActivity {
             ((EditText) v).setInputType(inputType);
             
             if (v == passwdView) {
+                //用户account输入完成后，检查用户是否和设备绑定
                 final String userAccount = accountView.getText().toString().trim();
                 final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
                 // 检查用户是否和设备绑定
