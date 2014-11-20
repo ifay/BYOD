@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 
 
 /**
@@ -16,6 +18,8 @@ import android.content.Intent;
  */
 public class CommonUtils {
 
+    public static String PKG_NAME = "com.byod";
+    
     public static String ONLINE_SERVER = "http://192.168.0.106:8080";    //TODO
     
     //退出系统receiver
@@ -43,7 +47,10 @@ public class CommonUtils {
     //通用code
     public static boolean SUCCESS = true;
     public static boolean FAIL = false;
+
+    private static String TAG = "CommonUtils";
     
+    //退出BYOD
     public static void exitBYOD(Context context) {
         Intent intent;
         intent = new Intent(context.getPackageName() + "."
@@ -51,6 +58,13 @@ public class CommonUtils {
         context.sendBroadcast(intent);
     }
     
+    //卸载自身
+    public static void uninstallBYOD(Context context) {
+        Uri packageUri = Uri.parse("package:"+CommonUtils.PKG_NAME);  
+        Log.d(TAG , "uninstall" + packageUri.toString());
+        Intent i = new Intent(Intent.ACTION_DELETE,packageUri);  
+        context.startActivity(i);  
+    }
     //MD5加密
     public static String cryptMD5(String src) {
         MessageDigest md5 = null;

@@ -56,17 +56,6 @@ public class DeviceUtils {
         BLUETOOTH_MAC = BluetoothAdapter.getDefaultAdapter().getAddress();
     }
 
-    /**
-     * 注册设备信息
-     * 需要联网，注意
-     * @param context
-     * @return
-     */
-    public boolean registerDevice(Context context) {
-        //TODO~~~
-        return CommonUtils.SUCCESS;
-    }
-    
 
     /**
      * MD5方法计算DeviceID

@@ -11,7 +11,7 @@ import android.content.Intent;
  * @author ifay
  * 监听来电状态
  * 若为公司相关来电，则清除系统中的通话记录，并且转存在工作区
- * TODO Manifest中增添
+ * TODO Manifest中注册
  */
 public class PhoneListener extends BroadcastReceiver {
 

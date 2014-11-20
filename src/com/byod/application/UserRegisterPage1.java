@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byod.R;
+import com.byod.launcher.HomeScreen;
 import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
@@ -161,7 +162,7 @@ public class UserRegisterPage1 extends Activity {
         }
     };
     
-    //认证并跳转页面
+    //认证并跳转到launcher页面
     View.OnClickListener authAndJumpListener = new View.OnClickListener() {
         
         @Override
@@ -180,7 +181,7 @@ public class UserRegisterPage1 extends Activity {
                     boolean authRst = AuthUtils.login(userAccount, userPwd, deviceID);
                     if (authRst == CommonUtils.SUCCESS) {
                         String userID = AuthUtils.getUserID(userAccount);
-                        Intent i = new Intent(mActivity,UserRegisterPage2.class);
+                        Intent i = new Intent(mActivity,HomeScreen.class);
                         i.putExtra("UserID",userID);
                         startActivity(i);
                     }
