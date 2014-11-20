@@ -5,3 +5,9 @@ obj
 local.properties
 gen
 libs/*.properties
+
+*.iml
+.idea
+.gradle
+gradle
+build
