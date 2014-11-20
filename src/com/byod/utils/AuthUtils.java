@@ -33,6 +33,8 @@ public class AuthUtils {
      */
     public static boolean addDeviceToUser(String userAccount) {
         // TODO 
+        // 将context中的设备相关信息全部发送至服务器
+        
         return CommonUtils.SUCCESS;
         
     }
