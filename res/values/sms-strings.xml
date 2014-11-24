@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="smsActivityLabel">BYOD-短信</string>
+    <string name="sms">短信</string>
 </resources>

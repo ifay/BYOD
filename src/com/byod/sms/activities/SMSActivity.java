@@ -1,38 +1,77 @@
 package com.byod.sms.activities;
 
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
-import com.byod.R;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.ListView;
 
-public class SMSActivity extends ActionBarActivity {
+import com.byod.R;
+import com.byod.contacts.bean.SMSBean;
+import com.byod.contacts.uitl.BaseIntentUtil;
+import com.byod.contacts.uitl.RexseeSMS;
+import com.byod.contacts.view.adapter.HomeSMSAdapter;
+import com.byod.contacts.view.sms.MessageBoxList;
+import com.byod.contacts.view.sms.NewSMSActivity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class SMSActivity extends Activity {
+
+    private ListView listView;
+    private HomeSMSAdapter adapter;
+    private RexseeSMS rsms;
+    private Button newSms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        init();
+
+    }
+
+    public void init() {
+
+        setContentView(R.layout.home_sms_page);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
+        listView = (ListView) findViewById(R.id.list);
+        adapter = new HomeSMSAdapter(SMSActivity.this);
+
+        rsms = new RexseeSMS(SMSActivity.this);
+        List<SMSBean> list_mmt = rsms.getThreadsNum(rsms.getThreads(0));
+        adapter.assignment(list_mmt);
+
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Map<String, String> map = new HashMap<String, String>();
+                SMSBean sb = adapter.getItem(position);
+                map.put("phoneNumber", sb.getAddress());
+                map.put("threadId", sb.getThread_id());
+                BaseIntentUtil.intentSysDefault(SMSActivity.this, MessageBoxList.class, map);
+            }
+        });
+
+        newSms = (Button) findViewById(R.id.newSms);
+        newSms.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BaseIntentUtil.intentSysDefault(SMSActivity.this, NewSMSActivity.class, null);
+            }
+        });
+
+
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 }

@@ -6,6 +6,6 @@ public class AppInfo {
 
     //Superuser perm包，appmanager包
     public AppInfo() {
-        
+
     }
 }

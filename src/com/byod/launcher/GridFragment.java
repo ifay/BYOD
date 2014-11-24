@@ -71,7 +71,8 @@ public class GridFragment extends Fragment {
     CharSequence mEmptyText;
     boolean mGridShown;
 
-    public GridFragment() { }
+    public GridFragment() {
+    }
 
     /**
      * Provide default implementation to return a simple grid view.  Subclasses
@@ -80,7 +81,7 @@ public class GridFragment extends Fragment {
      * is {@link android.R.id#list android.R.id.list} and can optionally
      * have a sibling view id {@link android.R.id#empty android.R.id.empty}
      * that is to be shown when the grid is empty.
-     *
+     * <p/>
      * <p>If you are overriding this method with your own custom content,
      * consider including the standard layout {@link android.R.layout#list_content}
      * in your layout file, so that you continue to retain all of the standard
@@ -132,7 +133,7 @@ public class GridFragment extends Fragment {
         lv.setSmoothScrollbarEnabled(true);
 
         // disable overscroll
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             lv.setOverScrollMode(ListView.OVER_SCROLL_NEVER);
         }
 
@@ -172,7 +173,7 @@ public class GridFragment extends Fragment {
         super.onDestroyView();
     }
 
-    public static int convertDpToPixels(float dp, Context context){
+    public static int convertDpToPixels(float dp, Context context) {
         Resources resources = context.getResources();
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
@@ -187,10 +188,10 @@ public class GridFragment extends Fragment {
      * getGridView().getItemAtPosition(position) if they need to access the
      * data associated with the selected item.
      *
-     * @param g The {@link GridView} where the click happened
-     * @param v The view that was clicked within the {@link GridView}
+     * @param g        The {@link GridView} where the click happened
+     * @param v        The view that was clicked within the {@link GridView}
      * @param position The position of the view in the grid
-     * @param id The row id of the item that was clicked
+     * @param id       The row id of the item that was clicked
      */
     public void onGridItemClick(GridView g, View v, int position, long id) {
 
@@ -268,7 +269,7 @@ public class GridFragment extends Fragment {
      * Control whether the grid is being displayed.  You can make it not
      * displayed if you are waiting for the initial data to show in it.  During
      * this time an indeterminant progress indicator will be shown instead.
-     *
+     * <p/>
      * <p>Applications do not normally need to use this themselves.  The default
      * behavior of ListFragment is to start with the grid not being shown, only
      * showing it once an adapter is given with {@link #setGridAdapter(ListAdapter)}.
@@ -276,7 +277,7 @@ public class GridFragment extends Fragment {
      * it will be do without the user ever seeing the hidden state.
      *
      * @param shown If true, the grid view is shown; if false, the progress
-     * indicator.  The initial value is true.
+     *              indicator.  The initial value is true.
      */
     public void setGridShown(boolean shown) {
         setGridShown(shown, true);
@@ -295,10 +296,10 @@ public class GridFragment extends Fragment {
      * displayed if you are waiting for the initial data to show in it.  During
      * this time an indeterminant progress indicator will be shown instead.
      *
-     * @param shown If true, the grid view is shown; if false, the progress
-     * indicator.  The initial value is true.
+     * @param shown   If true, the grid view is shown; if false, the progress
+     *                indicator.  The initial value is true.
      * @param animate If true, an animation will be used to transition to the
-     * new state.
+     *                new state.
      */
     private void setGridShown(boolean shown, boolean animate) {
         ensureGrid();
@@ -354,7 +355,7 @@ public class GridFragment extends Fragment {
         if (root instanceof GridView) {
             mGrid = (GridView) root;
         } else {
-            mStandardEmptyView = (TextView)root.findViewById(INTERNAL_EMPTY_ID);
+            mStandardEmptyView = (TextView) root.findViewById(INTERNAL_EMPTY_ID);
             if (mStandardEmptyView == null) {
                 mEmptyView = root.findViewById(android.R.id.empty);
             } else {

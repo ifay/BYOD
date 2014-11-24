@@ -12,5 +12,5 @@ public class PermEntry {
     public static final int POS_LOCATION = 14;
     public static final int POS_MOBILE = 16;
 
-    
+
 }

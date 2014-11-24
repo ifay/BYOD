@@ -1,18 +1,16 @@
-
 package com.byod.application.appmanager;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PermissionInfo;
 import android.util.Log;
 
 import com.byod.BYODApplication;
 import com.byod.application.perm.PermConstants;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AppManager {
 
@@ -39,9 +37,9 @@ public class AppManager {
 
     /**
      * get all installed apps exclude disabled
-     * 
-     * @author yyf
+     *
      * @return
+     * @author yyf
      */
     public ArrayList<PackageInfo> getInstalledApplications() {
         // mpm.getInstalledApplications(PackageManager.GET_DISABLED_COMPONENTS);
@@ -53,9 +51,10 @@ public class AppManager {
     /**
      * get Sensitive Application TODO 区分系统应用？？？还是设定应用白名单
      * takes time,run in thread
-     * @author yyf
+     *
      * @param force:whether use enterprise security policies
      * @return sensitive applications 'PackageInfo'
+     * @author yyf
      * @see PermConstants#PERMS_SENSTIVE
      */
     public ArrayList<PackageInfo> getSensitiveApplications(boolean force) {

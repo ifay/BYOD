@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="contactsActivityLabel">BYOD-通讯录</string>
-    <string name="starredList">标记</string>
-    <string name="frequentList">常用</string>
-    <string name="strequentList">收藏</string>
+    <string name="contacts">联系人</string>
 </resources>

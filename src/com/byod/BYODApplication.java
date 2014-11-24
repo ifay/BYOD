@@ -1,4 +1,3 @@
-
 package com.byod;
 
 import android.app.Activity;
@@ -8,7 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import com.byod.contacts.bean.ContactBean;
 import com.byod.utils.CommonUtils;
+
+import java.util.List;
 
 public class BYODApplication extends Application {
 
@@ -16,6 +18,7 @@ public class BYODApplication extends Application {
     public static boolean loggedIn = false;
     public static int REQUEST_AUTH_CODE = 1;
     public ExitListenerReceiver exitre;
+    private List<ContactBean> contactBeanList;
 
     public static BYODApplication getInstance() {
         return sInstance;
@@ -38,20 +41,21 @@ public class BYODApplication extends Application {
         exitre = new ExitListenerReceiver();
         IntentFilter intentfilter = new IntentFilter();
         intentfilter.addAction(this.getPackageName() + "."
-                             + CommonUtils.ExitListenerReceiver);
+                + CommonUtils.ExitListenerReceiver);
         this.registerReceiver(exitre, intentfilter);
-     }
+    }
 
-    private void unRegListener( ExitListenerReceiver receiver) {
+    private void unRegListener(ExitListenerReceiver receiver) {
         if (receiver != null) {
             this.unregisterReceiver(receiver);
         }
     }
+
     class ExitListenerReceiver extends BroadcastReceiver {
-            @Override
-             public void onReceive(Context context, Intent i) {
-                ((Activity) context).finish();
-            }
+        @Override
+        public void onReceive(Context context, Intent i) {
+            ((Activity) context).finish();
+        }
     }
 
 
@@ -61,5 +65,12 @@ public class BYODApplication extends Application {
         loggedIn = false;
         unRegListener(exitre);
     }
-    
+
+    public List<ContactBean> getContactBeanList() {
+        return contactBeanList;
+    }
+
+    public void setContactBeanList(List<ContactBean> contactBeanList) {
+        this.contactBeanList = contactBeanList;
+    }
 }

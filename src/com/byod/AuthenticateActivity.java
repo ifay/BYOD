@@ -1,4 +1,3 @@
-
 package com.byod;
 
 import android.app.Activity;
@@ -60,8 +59,8 @@ public class AuthenticateActivity extends BYODActivity {
                     // 合规性检测失败,退出应用
                     Bundle data = msg.getData();
                     int checkResult = data.getInt(PolicyUtils.POLICY_RESULT);   //TODO 如何和策略名對應上
-                    Toast.makeText(mActivity, "设备不符合安全规定" +checkResult +
-                    		"，应用即将退出", Toast.LENGTH_LONG).show();
+                    Toast.makeText(mActivity, "设备不符合安全规定" + checkResult +
+                            "，应用即将退出", Toast.LENGTH_LONG).show();
                     setResult(Activity.RESULT_CANCELED, intent);
                     CommonUtils.exitBYOD(mActivity);
                     break;
@@ -133,21 +132,21 @@ public class AuthenticateActivity extends BYODActivity {
             }
             keyboardUtil.showKeyboard();
             ((EditText) v).setInputType(inputType);
-            
+
             if (v == passwdView) {
                 //用户account输入完成后，检查用户是否和设备绑定
                 final String userAccount = accountView.getText().toString().trim();
                 final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
                 // 检查用户是否和设备绑定
                 Thread t = new Thread(new Runnable() {
-                    
+
                     @Override
                     public void run() {
                         boolean paired = AuthUtils.isUserAndDeviceBinded(userAccount, deviceID);
-                        if ( !paired) {
+                        if (!paired) {
                             handler.sendEmptyMessage(MSG_AUTH_NOT_PAIRED);
                             //用户和设备不匹配，非本人设备，要求用户退出
-                            Toast.makeText(mActivity, "此设备非"+userAccount+"所属\n" +
+                            Toast.makeText(mActivity, "此设备非" + userAccount + "所属\n" +
                                     "应用将退出...", Toast.LENGTH_LONG).show();
                             CommonUtils.exitBYOD(mActivity);
                         }
@@ -171,7 +170,7 @@ public class AuthenticateActivity extends BYODActivity {
             final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
             final String passwordCrypted = CommonUtils.cryptMD5(password);
 
-            
+
             //2. authenticate the user and device
             Thread t = new Thread(new Runnable() {
                 @Override
@@ -233,7 +232,7 @@ public class AuthenticateActivity extends BYODActivity {
 
         // 2. check the device compliance
         Thread t = new Thread(new Runnable() {
-            
+
             @Override
             public void run() {
                 int rst = DeviceUtils.isDeviceComplianced(mActivity);

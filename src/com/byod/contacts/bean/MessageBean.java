@@ -1,52 +1,52 @@
 package com.byod.contacts.bean;
 
-public class MessageBean{
+public class MessageBean {
 
-	private String name;
-	private String date;
-	private String text;
-	private int layoutID;
+    private String name;
+    private String date;
+    private String text;
+    private int layoutID;
 
-	public MessageBean(){
-	}
-	
-	public MessageBean(String name, String date, String text, int layoutID){
-		super();
-		this.name = name;
-		this.date = date;
-		this.text = text;
-		this.layoutID = layoutID;
-	}
-	
-	public String getName(){
-		return name;
-	}
+    public MessageBean() {
+    }
 
-	public void setName(String name){
-		this.name = name;
-	}
+    public MessageBean(String name, String date, String text, int layoutID) {
+        super();
+        this.name = name;
+        this.date = date;
+        this.text = text;
+        this.layoutID = layoutID;
+    }
 
-	public String getDate(){
-		return date;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setDate(String date){
-		this.date = date;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getText(){
-		return text;
-	}
+    public String getDate() {
+        return date;
+    }
 
-	public void setText(String text){
-		this.text = text;
-	}
+    public void setDate(String date) {
+        this.date = date;
+    }
 
-	public int getLayoutID(){
-		return layoutID;
-	}
+    public String getText() {
+        return text;
+    }
 
-	public void setLayoutID(int layoutID){
-		this.layoutID = layoutID;
-	}
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public int getLayoutID() {
+        return layoutID;
+    }
+
+    public void setLayoutID(int layoutID) {
+        this.layoutID = layoutID;
+    }
 }

@@ -17,7 +17,7 @@ import com.byod.utils.CommonUtils;
 public class UserRegisterPage2 extends Activity {
 
     private static final String TAG = "UserRegisterPage2";
-    private String url =CommonUtils.ONLINE_SERVER+"/UIA/user/edituser.jsp?UserID="; //TODO 如何绕过admin的鉴别？？
+    private String url = CommonUtils.ONLINE_SERVER + "/UIA/user/edituser.jsp?UserID="; //TODO 如何绕过admin的鉴别？？
     private String userID;
     //http://localhost:8080/UIA/user/edituser.jsp?UserID=2328
 
@@ -27,7 +27,7 @@ public class UserRegisterPage2 extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG,"onCreate");
+        Log.d(TAG, "onCreate");
         setContentView(R.layout.userregister2);
         Intent i = getIntent();
         userID = i.getStringExtra("UserID");
@@ -37,7 +37,7 @@ public class UserRegisterPage2 extends Activity {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initView() {
-        registerView = (WebView)findViewById(R.id.userRegisterView);
+        registerView = (WebView) findViewById(R.id.userRegisterView);
         //set view properties
         webSettings = registerView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -45,8 +45,8 @@ public class UserRegisterPage2 extends Activity {
         //set show view in this app
         registerView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress) {
-                setTitle("Loading..."+progress+"%");
-                setProgress(progress*100);
+                setTitle("Loading..." + progress + "%");
+                setProgress(progress * 100);
                 if (progress == 100) {
                     setTitle(R.string.app_name);
                 }
@@ -62,7 +62,7 @@ public class UserRegisterPage2 extends Activity {
 
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
-                    String failingUrl) {
+                                        String failingUrl) {
                 Toast.makeText(UserRegisterPage2.this, "Oh no:" + description, Toast.LENGTH_SHORT)
                         .show();
             }
@@ -70,10 +70,10 @@ public class UserRegisterPage2 extends Activity {
 
         Log.d(TAG, url);
         registerView.loadUrl(url);
-        
+
     }
-    
-    
+
+
 //    private UserRegisterPage2 mActivity;
 //    private Intent intent;
 //    private String userAccount;

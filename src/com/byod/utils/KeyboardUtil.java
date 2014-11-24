@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.byod.utils;
 
@@ -12,6 +12,7 @@ import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
+
 import com.byod.R;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.List;
 
 /**
  * @author ifay
- * 定义键盘的按键事件，随机键盘
+ *         定义键盘的按键事件，随机键盘
  */
 public class KeyboardUtil {
 
@@ -33,12 +34,12 @@ public class KeyboardUtil {
 
     private EditText ed;
 
-    public KeyboardUtil (Activity act, Context ctx, EditText edit) {
+    public KeyboardUtil(Activity act, Context ctx, EditText edit) {
         this.act = act;
         this.ctx = ctx;
         this.ed = edit;
         kNum = new Keyboard(ctx, R.xml.symbols);
-        kChar = new Keyboard(ctx,R.xml.qwerty);
+        kChar = new Keyboard(ctx, R.xml.qwerty);
         keyboardView = (KeyboardView) act.findViewById(R.id.keyboard_view);
         keyboardView.setKeyboard(kChar);
         keyboardView.setEnabled(true);
@@ -58,14 +59,14 @@ public class KeyboardUtil {
         public void onKey(int primaryCode, int[] keyCodes) {
             Editable editable = ed.getText();
             int start = ed.getSelectionStart();
-            switch(primaryCode) {
+            switch (primaryCode) {
                 case Keyboard.KEYCODE_CANCEL: // 完成
                     hideKeyboard();
                     break;
                 case Keyboard.KEYCODE_DELETE: // delete
                     if (editable != null && editable.length() > 0) {
                         if (start > 0) {
-                            editable.delete(start-1, start);
+                            editable.delete(start - 1, start);
                         }
                     }
                     break;
@@ -86,7 +87,7 @@ public class KeyboardUtil {
                     }
                     break;
                 default:
-                    editable.insert(start, String.valueOf((char)primaryCode));
+                    editable.insert(start, String.valueOf((char) primaryCode));
                     randomKey();
                     break;
             }
@@ -95,27 +96,27 @@ public class KeyboardUtil {
         @Override
         public void swipeUp() {
         }
-        
+
         @Override
         public void swipeRight() {
         }
-        
+
         @Override
         public void swipeLeft() {
         }
-        
+
         @Override
         public void swipeDown() {
         }
-        
+
         @Override
         public void onText(CharSequence text) {
         }
-        
+
         @Override
         public void onRelease(int primaryCode) {
         }
-        
+
         @Override
         public void onPress(int primaryCode) {
         }
@@ -124,7 +125,7 @@ public class KeyboardUtil {
     /**
      * 隐藏键盘
      */
-    public void hideKeyboard () {
+    public void hideKeyboard() {
         if (keyboardView.getVisibility() == View.VISIBLE) {
             keyboardView.setVisibility(View.GONE);
         }
@@ -148,43 +149,43 @@ public class KeyboardUtil {
     }
 
     /**
-     * 随机布局 
+     * 随机布局
      */
     private void randomKey() {
-        List<Key> keyList ;
+        List<Key> keyList;
         List<Key> newkeyList = new ArrayList<Key>();
         if (isNum) {
             //数字键
             keyList = kNum.getKeys();
-            for (int i=0;i<keyList.size();i++) {
-                if(keyList.get(i).label != null && isNumberKey(keyList.get(i))){
+            for (int i = 0; i < keyList.size(); i++) {
+                if (keyList.get(i).label != null && isNumberKey(keyList.get(i))) {
                     newkeyList.add(keyList.get(i));
                 }
             }
         } else {
             //字母键
             keyList = kChar.getKeys();
-            for (int i=0;i<keyList.size();i++) {
-                if(keyList.get(i).label != null && isWordKey(keyList.get(i))) {
+            for (int i = 0; i < keyList.size(); i++) {
+                if (keyList.get(i).label != null && isWordKey(keyList.get(i))) {
                     newkeyList.add(keyList.get(i));
                 }
             }
         }//if else
         int size = newkeyList.size();
-        for (int i = 0; i < size; i++) {  
-            int random_a = (int)(Math.random()*(size));  
-            int random_b = (int)(Math.random()*(size));  
-              
-            int code = newkeyList.get(random_a).codes[0];  
-            CharSequence label = newkeyList.get(random_a).label;  
-              
-            newkeyList.get(random_a).codes[0] = newkeyList.get(random_b).codes[0];  
-            newkeyList.get(random_a).label = newkeyList.get(random_b).label;  
-              
-            newkeyList.get(random_b).codes[0] = code;  
-            newkeyList.get(random_b).label = label;  
+        for (int i = 0; i < size; i++) {
+            int random_a = (int) (Math.random() * (size));
+            int random_b = (int) (Math.random() * (size));
+
+            int code = newkeyList.get(random_a).codes[0];
+            CharSequence label = newkeyList.get(random_a).label;
+
+            newkeyList.get(random_a).codes[0] = newkeyList.get(random_b).codes[0];
+            newkeyList.get(random_a).label = newkeyList.get(random_b).label;
+
+            newkeyList.get(random_b).codes[0] = code;
+            newkeyList.get(random_b).label = label;
         }
-        if (isNum){
+        if (isNum) {
             keyboardView.setKeyboard(kNum);
         } else {
             keyboardView.setKeyboard(kChar);
@@ -200,30 +201,32 @@ public class KeyboardUtil {
 
     /**
      * 数字code:48-57
+     *
      * @param k
      * @return
      */
     private boolean isNumberKey(Key k) {
         return (k.codes[0] > 47 && k.codes[0] < 58);
     }
+
     /**
      * 大小写切换 ：小-32=大
      * 大写字母：65-90
      * 小写字母：97-122
      */
-    public void switchKey () {
+    public void switchKey() {
         List<Key> keylist = kChar.getKeys();
         if (isUpper) {
             // 大写转小写
-            for (Key key: keylist) {
-                if(key.label != null && key.codes[0] < 91 && key.codes[0] > 64) {
+            for (Key key : keylist) {
+                if (key.label != null && key.codes[0] < 91 && key.codes[0] > 64) {
                     key.label = key.label.toString().toLowerCase();
                     key.codes[0] += 32;
                 }
             }
         } else {
-            for (Key key: keylist) {
-                if(key.label != null && key.codes[0] < 123 && key.codes[0] > 96) {
+            for (Key key : keylist) {
+                if (key.label != null && key.codes[0] < 123 && key.codes[0] > 96) {
                     key.label = key.label.toString().toUpperCase();
                     key.codes[0] -= 32;
                 }
