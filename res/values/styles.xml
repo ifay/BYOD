@@ -1,24 +1,40 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="topbar_bg">
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@drawable/top_bar_bg</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">46.0dip</item>
     </style>
-
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowAnimationStyle">@null</item>
+    
+    <style name="topbar_text">
+	    <item name="android:textSize">23sp</item>
+	    <item name="android:textStyle">bold</item>
+	    <item name="android:textColor">#ffffffff</item>
+	    <item name="android:layout_gravity">center</item>
+	    <item name="android:layout_width">wrap_content</item>
+	    <item name="android:layout_height">wrap_content</item>
+	    <item name="android:shadowColor">#40000000</item>
+	    <item name="android:shadowDy">-2.0</item>
+	    <item name="android:shadowRadius">4.0</item>
+	    <item name="android:layout_centerInParent">true</item>
     </style>
-
+    
+    <style name="topbar_btn">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
+    </style>
+    <style name="topbar_left_btn" parent="@style/topbar_btn">
+        <item name="android:layout_marginLeft">10.0dip</item>
+        <item name="android:layout_alignParentLeft">true</item>
+    </style>
+    
+    <style name="topbar_right_btn" parent="@style/topbar_btn">
+        <item name="android:layout_marginRight">10.0dip</item>
+        <item name="android:layout_alignParentRight">true</item>
+    </style>
 </resources>
