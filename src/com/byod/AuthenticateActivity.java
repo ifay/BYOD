@@ -262,5 +262,4 @@ public class AuthenticateActivity extends BYODActivity {
         }
         super.onBackPressed();
     }
-
 }

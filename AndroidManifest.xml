@@ -6,97 +6,210 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="21" />
 
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.GET_TASKS"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <permission android:name="android.permission.DELETE_PACKAGES" />
-    
+
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+
     <application
         android:name="com.byod.BYODApplication"
         android:allowBackup="false"
-        android:launchMode="singleTask"
         android:clearTaskOnLaunch="true"
-        android:stateNotNeeded="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:launchMode="singleTask"
+        android:stateNotNeeded="true"
         android:theme="@style/AppTheme" >
 
         <!-- 认证界面：每次通过图表进入应用都需要认证 -->
-        <activity 
+        <activity
             android:name="com.byod.AuthenticateActivity"
-            
+            android:excludeFromRecents="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:taskAffinity="com.byod.auth"
-            android:excludeFromRecents="true"
             android:screenOrientation="nosensor"
-            >
-          <intent-filter>
+            android:taskAffinity="com.byod.auth" >
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
-                <category android:name="android.intent.category.HOME"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        
-        <!--launcher界面 -->
+
+        <!-- launcher界面 -->
         <activity
             android:name="com.byod.launcher.HomeScreen"
-            android:taskAffinity="com.byod.launcher"
-            >
+            android:taskAffinity="com.byod.launcher" >
         </activity>
-        <!--欢迎界面 -->
-        <activity 
-            android:name="com.byod.MainActivity"
-            >
+        <!-- 欢迎界面 -->
+        <activity android:name="com.byod.MainActivity" >
         </activity>
-        <!--注册页面 -->
-        <activity 
-            android:name="com.byod.application.UserRegisterPage1"
-            >
+        <!-- 注册页面 -->
+        <activity android:name="com.byod.application.UserRegisterPage1" >
         </activity>
-        <!--注册页面 -->
-        <activity 
-            android:name="com.byod.application.UserRegisterPage2"
-            >
+        <!-- 注册页面 -->
+        <activity android:name="com.byod.application.UserRegisterPage2" >
         </activity>
 
         <!-- service monitor the top task activity -->
-        <service 
-            android:name="com.byod.application.watcher.AppWatcherService" >
-            <intent-filter >
+        <service android:name="com.byod.application.watcher.AppWatcherService" >
+            <intent-filter>
                 <action android:name="com.byod.action.START" />
             </intent-filter>
         </service>
-        
+
         <!-- device admin -->
-        <receiver 
+        <receiver
             android:name="com.byod.app.listener.MDMReceiver"
-            android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:description="@string/admin_desc"
-            >
-            <meta-data 
+            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+            <meta-data
                 android:name="android.app.device_admin"
-                android:resource="@xml/device_admin"
-                />
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+                android:resource="@xml/device_admin" />
+
+            <intent-filter android:priority="2147483647" >
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
-
         <receiver android:name="com.byod.app.listener.PackageChangeReceiver" >
-            <intent-filter android:priority="2147483647">
+            <intent-filter android:priority="2147483647" >
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
+
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
-        </application>
+        <!-- The main Contacts activity with the contact list, favorites, and groups. -->
+        <activity
+            android:name="com.byod.contacts.activities.PeopleActivity"
+            android:clearTaskOnLaunch="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/contactsActivityLabel"
+            android:launchMode="singleInstance"
+            android:process=":contacts"
+            android:taskAffinity="com.byod.auth"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.APP_CONTACTS" />
+                <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="vnd.android.cursor.dir/person" />
+                <data android:mimeType="vnd.android.cursor.dir/contact" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.byod.dial.activities.DialActivity"
+            android:clearTaskOnLaunch="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/dialActivityLabel"
+            android:launchMode="singleInstance"
+            android:process=":contacts"
+            android:taskAffinity="com.byod.auth"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.APP_CONTACTS" />
+                <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.byod.sms.activities.SMSActivity"
+            android:clearTaskOnLaunch="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/smsActivityLabel"
+            android:launchMode="singleInstance"
+            android:process=":contacts"
+            android:taskAffinity="com.byod.auth"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.APP_CONTACTS" />
+                <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.byod.PhoneTabHostAcitivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.byod.contacts.view.sms.MessageBoxList"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
+        </activity>
+        <activity
+            android:name="com.byod.contacts.view.sms.NewSMSActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
+        </activity>
+        <activity
+            android:name="xu.ye.view.sms.SelectContactsToSendActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+        </activity>
+        <service
+            android:name="com.byod.contacts.service.T9Service" />
+    </application>
 
 </manifest>
