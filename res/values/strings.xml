@@ -12,11 +12,12 @@
     <string name="next">下一步</string>
     <string name="fill_account">填写注册账户</string>
     <!-- Policy -->
-    <!-- <string name="fill_account">填写注册账户</string>
+    <!--
     <string name="fill_account">填写注册账户</string>
     <string name="fill_account">填写注册账户</string>
- -->
+    <string name="fill_account">填写注册账户</string>
+    -->
 
-
+    <string name="title_activity_dial">DialActivity</string>
 
 </resources>

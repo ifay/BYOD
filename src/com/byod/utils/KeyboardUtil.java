@@ -3,9 +3,6 @@
  */
 package com.byod.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.Keyboard;
@@ -15,8 +12,10 @@ import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
-
 import com.byod.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ifay
@@ -87,7 +86,7 @@ public class KeyboardUtil {
                     }
                     break;
                 default:
-                    editable.insert(start, Character.toString((char)primaryCode));
+                    editable.insert(start, String.valueOf((char)primaryCode));
                     randomKey();
                     break;
             }
