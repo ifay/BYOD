@@ -2,4 +2,5 @@
 <resources>
     <string name="smsActivityLabel">BYOD-短信</string>
     <string name="sms">短信</string>
+    <string name="sms_title">信息</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.byod.contacts.view.adapter;
+package com.byod.contacts.adapter;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -6,77 +6,50 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
-
 import com.byod.R;
 import com.byod.contacts.bean.ContactBean;
 import com.byod.ui.QuickAlphabeticBar;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
-public class SelectContactsToSendAdapter extends BaseAdapter {
-
+public class ContactsAdapter extends BaseAdapter {
     private LayoutInflater inflater;
-    private List<ContactBean> list;
-    private HashMap<String, Integer> alphaIndexer;
-    private String[] sections;
+    private List<ContactBean> mContactList;
+    private HashMap<String, Integer> mAlphaIndexer;
     private Context ctx;
-    public static Map<Integer, Boolean> isSelected;
-    public int a, b, c;
 
-
-    public SelectContactsToSendAdapter(Context context, List<ContactBean> list, QuickAlphabeticBar alpha) {
-
+    public ContactsAdapter(Context context, List<ContactBean> list, QuickAlphabeticBar alpha) {
         this.ctx = context;
         this.inflater = LayoutInflater.from(context);
-        this.list = list;
-        this.alphaIndexer = new HashMap<String, Integer>();
-        this.sections = new String[list.size()];
-        isSelected = new HashMap<Integer, Boolean>();
+        this.mContactList = list;
+        this.mAlphaIndexer = new HashMap<>();
 
         for (int i = 0; i < list.size(); i++) {
-
-            isSelected.put(i, false);
-            if (list.get(i).getSelected() == 1) {
-                isSelected.put(i, true);
-            }
-
             String name = getAlpha(list.get(i).getSortKey());
-            if (!alphaIndexer.containsKey(name)) {
-                alphaIndexer.put(name, i);
+            if (!mAlphaIndexer.containsKey(name)) {
+                mAlphaIndexer.put(name, i); // 字母索引, 处位置
             }
         }
-
-        Set<String> sectionLetters = alphaIndexer.keySet();
-        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
-        Collections.sort(sectionList);
-        sections = new String[sectionList.size()];
-        sectionList.toArray(sections);
-
-        alpha.setAlphaIndexer(alphaIndexer);
+        alpha.setAlphaIndexer(mAlphaIndexer);
     }
 
     @Override
     public int getCount() {
-        return list.size();
+        return mContactList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return list.get(position);
+        return mContactList.get(position);
     }
 
     @Override
@@ -85,54 +58,36 @@ public class SelectContactsToSendAdapter extends BaseAdapter {
     }
 
     public void remove(int position) {
-        list.remove(position);
+        mContactList.remove(position);
     }
-
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ViewHolder holder;
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.select_contact_to_send_list_item, null);
-
-
+            convertView = inflater.inflate(R.layout.contacts_list_item, null);
             holder = new ViewHolder();
             holder.qcb = (QuickContactBadge) convertView.findViewById(R.id.qcb);
             holder.alpha = (TextView) convertView.findViewById(R.id.alpha);
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.number = (TextView) convertView.findViewById(R.id.number);
-            holder.check = (ImageView) convertView.findViewById(R.id.check);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        ContactBean cb = list.get(position);
-        String name = cb.getDisplayName();
-        String number = cb.getPhoneNum();
-        holder.name.setText(name);
-        holder.number.setText(number);
+        ContactBean cb = mContactList.get(position);
+        holder.name.setText(cb.getDisplayName());
+        holder.number.setText(cb.getPhoneNum());
         holder.qcb.assignContactUri(Contacts.getLookupUri(cb.getContactId(), cb.getLookUpKey()));
-        if (0 == cb.getPhotoId()) {
-
-
-            holder.qcb.setImageResource(R.drawable.person_white);
-        } else {
+        if (0 != cb.getPhotoId()) {
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, cb.getContactId());
             InputStream input = Contacts.openContactPhotoInputStream(ctx.getContentResolver(), uri);
             Bitmap contactPhoto = BitmapFactory.decodeStream(input);
             holder.qcb.setImageBitmap(contactPhoto);
         }
         String currentStr = getAlpha(cb.getSortKey());
-        String previewStr = (position - 1) >= 0 ? getAlpha(list.get(position - 1).getSortKey()) : " ";
-
-        if (isSelected.get(position)) {
-            holder.check.setImageResource(R.drawable.ic_checkbox_checked);
-        } else {
-            holder.check.setImageResource(R.drawable.ic_checkbox_unchecked);
-        }
-
+        String previewStr = (position - 1) >= 0 ? getAlpha(mContactList.get(position - 1).getSortKey()) : " ";
         if (!previewStr.equals(currentStr)) {
             holder.alpha.setVisibility(View.VISIBLE);
             holder.alpha.setText(currentStr);
@@ -143,24 +98,21 @@ public class SelectContactsToSendAdapter extends BaseAdapter {
     }
 
     private static class ViewHolder {
+        // 头像
         QuickContactBadge qcb;
+        // 字母分隔栏
         TextView alpha;
         TextView name;
         TextView number;
-        ImageView check;
     }
 
     private String getAlpha(String str) {
-        if (str == null) {
-            return "#";
-        }
-        if (str.trim().length() == 0) {
+        if (TextUtils.isEmpty(str)) {
             return "#";
         }
         char c = str.trim().substring(0, 1).charAt(0);
-        Pattern pattern = Pattern.compile("^[A-Za-z]+$");
-        if (pattern.matcher(c + "").matches()) {
-            return (c + "").toUpperCase();
+        if (Character.isLetter(c)) {
+            return String.valueOf(Character.toUpperCase(c));
         } else {
             return "#";
         }

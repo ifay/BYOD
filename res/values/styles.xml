@@ -3,8 +3,9 @@
     <style name="topbar_bg">
         <item name="android:gravity">center_vertical</item>
         <item name="android:background">@drawable/top_bar_bg</item>
-        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">46.0dip</item>
+        <item name="android:layout_alignParentTop">true</item>
     </style>
     
     <style name="topbar_text">

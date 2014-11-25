@@ -26,7 +26,6 @@ public class MyViewGroup extends ViewGroup {
 
     @Override
     protected void onLayout(boolean arg0, int arg1, int arg2, int arg3, int arg4) {
-
         final int count = getChildCount();
         int row = 0;// which row lay you view relative to parent
         int lengthX = arg1;    // right position of child relative to parent
@@ -53,5 +52,4 @@ public class MyViewGroup extends ViewGroup {
             child.layout(lengthX - width, lengthY - height, lengthX, lengthY);
         }
     }
-
 }

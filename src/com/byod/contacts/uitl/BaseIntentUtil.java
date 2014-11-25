@@ -9,13 +9,10 @@ import java.util.Set;
 
 
 public class BaseIntentUtil {
-
-
     public static int DEFAULT_ENTER_ANIM;
     public static int DEFAULT_EXIT_ANIM;
 
     private static Intent intent;
-
 
     public static void intentDIY(Activity activity, Class<?> classes) {
         intentDIY(activity, classes, null, DEFAULT_ENTER_ANIM, DEFAULT_EXIT_ANIM);
