@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RexseeSMS {
-
     public static final String CONTENT_URI_SMS = "content://sms";
     public static final String CONTENT_URI_SMS_INBOX = "content://sms/inbox";
     public static final String CONTENT_URI_SMS_SENT = "content://sms/sent";

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class T9Adapter extends BaseAdapter implements Filterable {
-
     private LayoutInflater mInflater;
     private List<ContactBean> list;
     private List<ContactBean> allContactList;
@@ -64,7 +63,7 @@ public class T9Adapter extends BaseAdapter implements Filterable {
 
         ViewHolder holder = null;
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.home_t9_list_item, parent, false);
+            convertView = mInflater.inflate(R.layout.t9_list_item, parent, false);
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.pinyin = (TextView) convertView.findViewById(R.id.pinyin);

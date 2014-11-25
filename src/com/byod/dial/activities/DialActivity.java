@@ -28,7 +28,7 @@ import android.widget.ListView;
 import com.byod.BYODApplication;
 import com.byod.R;
 import com.byod.contacts.bean.CallLogBean;
-import com.byod.contacts.view.adapter.HomeDialAdapter;
+import com.byod.dial.adapter.DialAdapter;
 import com.byod.contacts.view.adapter.T9Adapter;
 
 import java.text.SimpleDateFormat;
@@ -42,7 +42,7 @@ public class DialActivity extends Activity implements OnClickListener {
 
     private AsyncQueryHandler asyncQuery;
 
-    private HomeDialAdapter adapter;
+    private DialAdapter adapter;
     private ListView callLogList;
 
     private List<CallLogBean> list;
@@ -63,9 +63,8 @@ public class DialActivity extends Activity implements OnClickListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.home_dial_page);
+        setContentView(R.layout.dial_page);
 
         application = (BYODApplication) getApplication();
         listView = (ListView) findViewById(R.id.contact_list);
@@ -225,7 +224,7 @@ public class DialActivity extends Activity implements OnClickListener {
 
 
     private void setAdapter(List<CallLogBean> list) {
-        adapter = new HomeDialAdapter(this, list);
+        adapter = new DialAdapter(this, list);
 //		TextView tv = new TextView(this);
 //		tv.setBackgroundResource(R.drawable.dial_input_bg2);
 //		callLogList.addFooterView(tv);

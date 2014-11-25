@@ -18,5 +18,4 @@
         android:scaleType="center"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="#ffffff" />
-
 </LinearLayout>

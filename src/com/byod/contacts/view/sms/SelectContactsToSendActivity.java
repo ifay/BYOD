@@ -19,7 +19,7 @@ import com.byod.R;
 import com.byod.contacts.bean.ContactBean;
 import com.byod.contacts.uitl.BaseIntentUtil;
 import com.byod.contacts.view.adapter.SelectContactsToSendAdapter;
-import com.byod.contacts.view.ui.QuickAlphabeticBar;
+import com.byod.ui.QuickAlphabeticBar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

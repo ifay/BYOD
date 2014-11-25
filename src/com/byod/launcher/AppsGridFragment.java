@@ -64,10 +64,10 @@ public class AppsGridFragment extends GridFragment implements LoaderManager.Load
             Context context = getActivity().getApplicationContext();
             if (null == app.getAppInfo()) {// 应用内应用
                 Resources resources = context.getResources();
-                if (resources.getString(R.string.contactsActivityLabel).equals(app.getLabel())) {
+                if (resources.getString(R.string.dialActivityLabel).equals(app.getLabel())) {
                     intent = new Intent(context, PhoneTabHostAcitivity.class);
                     intent.putExtra(PhoneTabHostAcitivity.EXTRA_PAGE, 0);
-                } else if (resources.getString(R.string.dialActivityLabel).equals(app.getLabel())) {
+                } else if (resources.getString(R.string.contactsActivityLabel).equals(app.getLabel())) {
                     intent = new Intent(context, PhoneTabHostAcitivity.class);
                     intent.putExtra(PhoneTabHostAcitivity.EXTRA_PAGE, 1);
                 } else if (resources.getString(R.string.smsActivityLabel).equals(app.getLabel())) {
