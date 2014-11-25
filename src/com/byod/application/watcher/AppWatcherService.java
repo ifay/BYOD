@@ -1,7 +1,5 @@
 package com.byod.application.watcher;
 
-import java.util.List;
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Service;
@@ -11,6 +9,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.util.List;
 
 /*
  * 监控当前正在运行的应用,if byod is not foreground, throw a notifier to switch
@@ -25,7 +25,7 @@ public class AppWatcherService extends Service {
     private static int sMaxAppsNum = 1000;
 
     public class MyBinder extends Binder {
-        public List<RunningServiceInfo> getRunningServices(){
+        public List<RunningServiceInfo> getRunningServices() {
             return null;
         }
     }
@@ -38,16 +38,18 @@ public class AppWatcherService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mActivityManager = (ActivityManager)this.getSystemService("activity");
+        mActivityManager = (ActivityManager) this.getSystemService("activity");
         ComponentName topActivity = mActivityManager.getRunningTasks(1).get(0).topActivity;
         //获得所有在运行的服务
-        List <RunningServiceInfo> serviceList= mActivityManager.getRunningServices(sMaxAppsNum);
-        Log.d("test",topActivity.getPackageName());
+        List<RunningServiceInfo> serviceList = mActivityManager.getRunningServices(sMaxAppsNum);
+        Log.d("test", topActivity.getPackageName());
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
     }
+
     @Override
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);

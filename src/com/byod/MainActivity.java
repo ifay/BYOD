@@ -1,11 +1,5 @@
-
 package com.byod;
 
-import java.util.ArrayList;
-
-import org.w3c.dom.UserDataHandler;
-
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -17,7 +11,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout.LayoutParams;
@@ -42,11 +35,12 @@ import com.byod.application.appmanager.AppManager;
 import com.byod.application.watcher.AppWatcherService;
 import com.byod.utils.DeviceUtils;
 
+import java.util.ArrayList;
+
 /**
- * 
  * @author ifay
- *
- * 主要测试页面，显示所有不安全权限应用，显示设备ID...
+ *         <p/>
+ *         主要测试页面，显示所有不安全权限应用，显示设备ID...
  */
 public class MainActivity extends BYODActivity implements OnItemClickListener {
 
@@ -67,10 +61,10 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
         @Override
         public void onServiceDisconnected(ComponentName name) {
         }
-        
+
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mBinder = (AppWatcherService.MyBinder)service;
+            mBinder = (AppWatcherService.MyBinder) service;
             mBinder.getRunningServices();
         }
     };
@@ -87,9 +81,9 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
                 "IMSI:" + DeviceUtils.getInstance(this).getIMSI() + "\n" +
                 "TEL:" + DeviceUtils.getInstance(this).getTEL());
 
-         //开启监控---should start after login
-         Intent service = new Intent(this,AppWatcherService.class);
-         startService(service);
+        //开启监控---should start after login
+        Intent service = new Intent(this, AppWatcherService.class);
+        startService(service);
 //         bindService(service, serviceConn, BIND_ABOVE_CLIENT);
     }
 
@@ -107,10 +101,10 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
         //注册
         register = (Button) findViewById(R.id.register);
         register.setOnClickListener(new View.OnClickListener() {
-            
+
             @Override
             public void onClick(View v) {
-                Intent regIntent = new Intent(MainActivity.this,UserRegisterPage1.class);
+                Intent regIntent = new Intent(MainActivity.this, UserRegisterPage1.class);
                 startActivity(regIntent);
             }
         });
@@ -133,34 +127,36 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         //data src
-    	String[] perms = mMaliciousAppList.get(position).requestedPermissions;
+        String[] perms = mMaliciousAppList.get(position).requestedPermissions;
 
         LinearLayout permView = new LinearLayout(this);
-        permView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+        permView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         permView.setBackgroundColor(Color.WHITE);
         ListView permListView = new ListView(this);
         permListView.setBackgroundColor(Color.WHITE);
         permListView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, perms));
         permView.addView(permListView);
         final AlertDialog dlg = new AlertDialog.Builder(this)
-            .setTitle(R.string.all_perm).setView(permView)
-            .setNeutralButton(R.string.OK, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            }).create();
+                .setTitle(R.string.all_perm).setView(permView)
+                .setNeutralButton(R.string.OK, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).create();
         dlg.show();
     }
 
     private static class ViewHolder {
         ImageView icon;
         TextView pkgName;
+
         public ViewHolder(View rootView) {
-            icon = (ImageView)rootView.findViewById(R.id.icon);
-            pkgName = (TextView)rootView.findViewById(R.id.name);
+            icon = (ImageView) rootView.findViewById(R.id.icon);
+            pkgName = (TextView) rootView.findViewById(R.id.name);
         }
     }
+
     private class MyAdapter extends BaseAdapter implements View.OnClickListener {
         private Context mContext;
         private LayoutInflater mInflater;
@@ -192,10 +188,10 @@ public class MainActivity extends BYODActivity implements OnItemClickListener {
                 convertView = mInflater.inflate(R.layout.listitem, parent, false);
                 holder = new ViewHolder(convertView);
                 convertView.setTag(holder);
-            }else{
-                holder = (ViewHolder)convertView.getTag();
+            } else {
+                holder = (ViewHolder) convertView.getTag();
             }
-            setItemContent(holder,position);
+            setItemContent(holder, position);
             return convertView;
         }
 

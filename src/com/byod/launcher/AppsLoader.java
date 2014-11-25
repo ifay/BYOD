@@ -5,16 +5,18 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.support.v4.content.AsyncTaskLoader;
 
+import com.byod.R;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * appsLoader 应该只加载特定的应用
- * @changedBy ifay
  *
+ * @changedBy ifay
  */
 public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
     ArrayList<AppModel> mInstalledApps;
@@ -30,8 +32,8 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
     //TOChange: launcher 内部应该只显示企业指定应用
     @Override
     public ArrayList<AppModel> loadInBackground() {
-        
-        
+
+
         // retrieve the list of installed applications
         List<ApplicationInfo> apps = mPm.getInstalledApplications(0);
 
@@ -49,10 +51,17 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
             // only apps which are launchable
             if (context.getPackageManager().getLaunchIntentForPackage(pkg) != null) {
                 AppModel app = new AppModel(context, apps.get(i));
-                app.loadLabel(context);
                 items.add(app);
             }
         }
+
+        // 增加应用内 通讯录，拨号，短信 信息
+        items.add(new AppModel(context, context.getResources().getString(R.string.contactsActivityLabel),
+                context.getResources().getDrawable(R.drawable.ic_contacts)));
+        items.add(new AppModel(context, context.getResources().getString(R.string.dialActivityLabel),
+                context.getResources().getDrawable(R.drawable.ic_dial)));
+        items.add(new AppModel(context, context.getResources().getString(R.string.smsActivityLabel),
+                context.getResources().getDrawable(R.drawable.ic_sms)));
 
         // sort the list
         Collections.sort(items, ALPHA_COMPARATOR);
@@ -94,7 +103,7 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
             deliverResult(mInstalledApps);
         }
 
-        if (takeContentChanged() || mInstalledApps == null ) {
+        if (takeContentChanged() || mInstalledApps == null) {
             // If the data has changed since the last time it was loaded
             // or is not currently available, start a load.
             forceLoad();
@@ -144,6 +153,7 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
      */
     public static final Comparator<AppModel> ALPHA_COMPARATOR = new Comparator<AppModel>() {
         private final Collator sCollator = Collator.getInstance();
+
         @Override
         public int compare(AppModel object1, AppModel object2) {
             return sCollator.compare(object1.getLabel(), object2.getLabel());

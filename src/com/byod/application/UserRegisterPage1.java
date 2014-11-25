@@ -1,4 +1,3 @@
-
 package com.byod.application;
 
 import android.app.Activity;
@@ -28,12 +27,12 @@ import com.byod.utils.PolicyUtils;
 
 /**
  * @author ifay 完善注册页面，（调用条件：首次使用设备登录） 尝试web View方式实现
- *         步骤一（服务器端）：管理员在UIA上录入用户的基本信息，用户获得默认权限-最低的权限 
+ *         步骤一（服务器端）：管理员在UIA上录入用户的基本信息，用户获得默认权限-最低的权限
  *         步骤二：设备上没有策略信息：1-2-3（新用户） 或者 1-4（新设备）
- *              Page1: 输入用户名(可考虑做成翻页形式，“下一步”)
- *              Page2: 输入初始密码
- *              Page3：完善用户信息 （包括挑战问题）
- *              Page4：输入用户密码并添加设备  
+ *         Page1: 输入用户名(可考虑做成翻页形式，“下一步”)
+ *         Page2: 输入初始密码
+ *         Page3：完善用户信息 （包括挑战问题）
+ *         Page4：输入用户密码并添加设备
  *         考虑把登陆INFO的方法做成服务？？还是直接用WebView展示？
  */
 
@@ -91,8 +90,8 @@ public class UserRegisterPage1 extends Activity {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Thread t = new Thread (new Runnable() {
-                    
+                Thread t = new Thread(new Runnable() {
+
                     @Override
                     public void run() {
                         //注册设备
@@ -144,27 +143,27 @@ public class UserRegisterPage1 extends Activity {
                     int deviceNum = DeviceUtils.getUserDeviceNum(userAccount); // TODO fake data
                     int complianced = DeviceUtils.isDeviceComplianced(mActivity);
                     if (complianced == PolicyUtils.CODE_COMPLIANCED) {
-                        if (deviceNum == 0 ) {
+                        if (deviceNum == 0) {
                             handler.sendEmptyMessage(MSG_FIRST_DEVICE);
                         } else {
                             handler.sendEmptyMessage(MSG_ADD_DEVICE);
                         }
                     } else {
-                        Toast.makeText(mActivity, "设备不符合合规策略："+ complianced+",请检查后再添加", Toast.LENGTH_LONG).show();
+                        Toast.makeText(mActivity, "设备不符合合规策略：" + complianced + ",请检查后再添加", Toast.LENGTH_LONG).show();
                     }
                 }
             });
-            if (pwdET.getVisibility() != View.VISIBLE){
+            if (pwdET.getVisibility() != View.VISIBLE) {
                 t.start();
-            } else{
+            } else {
                 userPwd = pwdET.getText().toString();
             }
         }
     };
-    
+
     //认证并跳转到launcher页面
     View.OnClickListener authAndJumpListener = new View.OnClickListener() {
-        
+
         @Override
         public void onClick(View v) {
             //Auth
@@ -174,18 +173,18 @@ public class UserRegisterPage1 extends Activity {
                 Toast.makeText(mActivity, "用户名或密码不能为空", Toast.LENGTH_SHORT).show();
             }
             Thread t = new Thread(new Runnable() {
-                
+
                 @Override
                 public void run() {
                     String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
                     boolean authRst = AuthUtils.login(userAccount, userPwd, deviceID);
                     if (authRst == CommonUtils.SUCCESS) {
                         String userID = AuthUtils.getUserID(userAccount);
-                        Intent i = new Intent(mActivity,HomeScreen.class);
-                        i.putExtra("UserID",userID);
+                        Intent i = new Intent(mActivity, HomeScreen.class);
+                        i.putExtra("UserID", userID);
                         startActivity(i);
                     }
-                    
+
                 }
             });
             t.start();
@@ -194,17 +193,17 @@ public class UserRegisterPage1 extends Activity {
 
     //认证并新增设备
     View.OnClickListener authAndAddDevice = new View.OnClickListener() {
-        
+
         @Override
         public void onClick(View v) {
-          //Auth
+            //Auth
             userAccount = userAccountET.getText().toString().trim();
             userPwd = pwdET.getText().toString();
             if (userAccount.length() < 1 || userPwd.length() < 1) {
                 Toast.makeText(mActivity, "用户名或密码不能为空", Toast.LENGTH_SHORT).show();
             }
             Thread t = new Thread(new Runnable() {
-                
+
                 @Override
                 public void run() {
                     String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
@@ -215,16 +214,16 @@ public class UserRegisterPage1 extends Activity {
                     } else {
                         Toast.makeText(mActivity, "用户名和密码不匹配", Toast.LENGTH_SHORT).show();
                     }
-                    
+
                 }
             });
             t.start();
         }
     };
-    
+
     //keyboard
     View.OnTouchListener showKeyboard = new View.OnTouchListener() {
-        
+
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             int inputType = ((EditText) v).getInputType();

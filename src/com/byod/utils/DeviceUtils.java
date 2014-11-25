@@ -10,14 +10,13 @@ import android.telephony.TelephonyManager;
 import com.stericson.RootTools.RootTools;
 
 /**
- * 
  * @author ifay
- * 单例使用
- * 
- * 提供设备唯一标识
- * 提供设备基本信息：OS，Version，Name
- * 第一次使用，将设备ID记录到sharedPreference中??
- * 判断是否root
+ *         单例使用
+ *         <p/>
+ *         提供设备唯一标识
+ *         提供设备基本信息：OS，Version，Name
+ *         第一次使用，将设备ID记录到sharedPreference中??
+ *         判断是否root
  */
 public class DeviceUtils {
 
@@ -39,7 +38,7 @@ public class DeviceUtils {
 
     public static boolean isDeviceComplianced = false;
 
-    public static DeviceUtils getInstance (Context context){
+    public static DeviceUtils getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new DeviceUtils(context);
         }
@@ -53,7 +52,10 @@ public class DeviceUtils {
         IMSI = tm.getSubscriberId();    //for GSM phone only TODO
         TEL = tm.getLine1Number();  //maybe null
         WLAN_MAC = wm.getConnectionInfo().getMacAddress();
-        BLUETOOTH_MAC = BluetoothAdapter.getDefaultAdapter().getAddress();
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (null != bluetoothAdapter) {
+            BLUETOOTH_MAC = bluetoothAdapter.getAddress();
+        }
     }
 
 
@@ -62,7 +64,7 @@ public class DeviceUtils {
      * 产生32位的16进制数据，总长为
      */
     public String getsDeviceIdMD5() {
-        String longID = IMEI +IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+        String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
         sDeviceID = CommonUtils.cryptMD5(longID);
         return sDeviceID;
     }
@@ -71,7 +73,7 @@ public class DeviceUtils {
      * SHA1方法计算DeviceID
      */
     public String getsDeviceIdSHA1() {
-        String longID = IMEI +IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+        String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
         sDeviceID = CommonUtils.cryptSH1(longID);
         return sDeviceID;
     }
@@ -102,25 +104,26 @@ public class DeviceUtils {
     }
 
     /**
-         * 对设备进行合规性检测
-         * 将设备信息发送至服务器，由服务器进行检测
-         * 
-         * @param context
-         * @return 0：通过。正数：某条策略未通过
-         */
-        public static int isDeviceComplianced(Context context) {
-            //1.sync the newest policy
-            PolicyUtils.getNewestPolicy();
-            SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
-            
-            //将设备信息发送至服务器，由服务器进行检测。
-            
-            return 0;
-    
-        }
+     * 对设备进行合规性检测
+     * 将设备信息发送至服务器，由服务器进行检测
+     *
+     * @param context
+     * @return 0：通过。正数：某条策略未通过
+     */
+    public static int isDeviceComplianced(Context context) {
+        //1.sync the newest policy
+        PolicyUtils.getNewestPolicy();
+        SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
+
+        //将设备信息发送至服务器，由服务器进行检测。
+
+        return 0;
+
+    }
 
     /**
      * 向服务器查询用户所有设备数目
+     *
      * @param userAccount 用户账户唯一标识，此处用邮箱
      * @return 用户所绑定的设备数目
      */
@@ -131,6 +134,7 @@ public class DeviceUtils {
 
     /**
      * 判断是否root
+     *
      * @return
      */
     public static boolean isRooted() {

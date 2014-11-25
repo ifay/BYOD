@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.byod.launcher;
 
@@ -12,9 +12,9 @@ import com.byod.AuthenticateActivity;
 import com.byod.BYODActivity;
 import com.byod.BYODApplication;
 import com.byod.R;
+
 /**
  * @author ifay
- *
  */
 
 public class HomeScreen extends FragmentActivity {
@@ -28,7 +28,7 @@ public class HomeScreen extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(!BYODApplication.loggedIn) {
+        if (!BYODApplication.loggedIn) {
             Intent intent = new Intent(this, AuthenticateActivity.class);
             startActivityForResult(intent, BYODActivity.REQUEST_AUTH_CODE);
         }
@@ -39,7 +39,7 @@ public class HomeScreen extends FragmentActivity {
 
         if (resultCode == Activity.RESULT_CANCELED) {
             this.finish();//http://smallwoniu.blog.51cto.com/3911954/1248643 应用退出方法
-            return ;
+            return;
         }
 
         if (requestCode == BYODActivity.REQUEST_AUTH_CODE) {

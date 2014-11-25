@@ -3,21 +3,20 @@ package com.byod.app.listener;
 import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 
 public class MDMReceiver extends DeviceAdminReceiver {
 
-    
+
     /**
-     * 使能设备Admin：需要从服务器获取策略设置 
+     * 使能设备Admin：需要从服务器获取策略设置
      * TODO
      */
     @Override
     public void onEnabled(Context context, Intent intent) {
         super.onEnabled(context, intent);
         Log.d("device admin", "is active");
-        
+
     }
 
     @Override
@@ -38,7 +37,7 @@ public class MDMReceiver extends DeviceAdminReceiver {
     @Override
     public void onPasswordSucceeded(Context context, Intent intent) {
         super.onPasswordSucceeded(context, intent);
-        
+
     }
 
     @Override
@@ -46,5 +45,5 @@ public class MDMReceiver extends DeviceAdminReceiver {
         super.onPasswordExpiring(context, intent);
     }
 
-    
+
 }

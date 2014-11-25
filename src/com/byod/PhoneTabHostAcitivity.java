@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,15 +19,17 @@ import android.widget.TabHost;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabWidget;
 import android.widget.TextView;
+
 import com.byod.contacts.activities.PeopleActivity;
-import com.byod.dial.activities.HomeDialActivity;
-import com.byod.sms.activities.HomeSMSActivity;
-import com.byod.contacts.view.HomeSettintActivity;
+import com.byod.contacts.service.T9Service;
 import com.byod.contacts.view.other.SystemScreenInfo;
+import com.byod.dial.activities.DialActivity;
+import com.byod.sms.activities.SMSActivity;
 import com.byod.ui.AnimationTabHost;
 
 public class PhoneTabHostAcitivity extends TabActivity {
-
+    private static final String TAG = "PhoneTabHostAcitivity";
+    public static final String EXTRA_PAGE = "page";
     private AnimationTabHost mTabHost;
     private TabWidget mTabWidget;
     private ImageView cursor;
@@ -35,24 +38,19 @@ public class PhoneTabHostAcitivity extends TabActivity {
     private int bmpW;
     private ImageView[] views;
 
-    // http://www.it165.net/pro/html/201404/12048.html
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_hometabhost);
-
+        Intent startService = new Intent(this, T9Service.class);
+        startService(startService);
         SystemScreenInfo.getSystemInfo(PhoneTabHostAcitivity.this);
 
         InitImageView();
         mTabWidget = (TabWidget) findViewById(android.R.id.tabs);
         mTabHost = (AnimationTabHost) findViewById(android.R.id.tabhost);
-
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                initBottomMenu();
-            }
-        }, 300);
-
-        init();
+        Log.d(TAG, "Go to page: " + getIntent().getIntExtra(EXTRA_PAGE, 0));
+        init(getIntent().getIntExtra(EXTRA_PAGE, 0));
     }
 
     private int getImageId(int index, boolean isSelect) {
@@ -67,14 +65,11 @@ public class PhoneTabHostAcitivity extends TabActivity {
             case 2:
                 result = isSelect ? R.drawable.tab_sms_selected : R.drawable.tab_sms_normal;
                 break;
-            case 3:
-                result = isSelect ? R.drawable.tab_settings_selected : R.drawable.tab_settings_normal;
-                break;
         }
         return result;
     }
 
-    private void initBottomMenu() {
+    private void initBottomMenu(int page) {
         int viewCount = mTabWidget.getChildCount();
         views = new ImageView[viewCount];
         for (int i = 0; i < views.length; i++) {
@@ -89,19 +84,22 @@ public class PhoneTabHostAcitivity extends TabActivity {
                 onPageSelected(tabID);
             }
         });
+        mTabHost.setCurrentTab(page);
     }
 
-    private void init() {
-        setIndicator("拨号", 0, new Intent(this, HomeDialActivity.class), R.drawable.tab_dial_selected);
-        setIndicator("联系人", 1, new Intent(this, PeopleActivity.class), R.drawable.tab_contact_normal);
-        setIndicator("信息", 2, new Intent(this, HomeSMSActivity.class), R.drawable.tab_sms_normal);
-        setIndicator("设置", 3, new Intent(this, HomeSettintActivity.class), R.drawable.tab_settings_normal);
+    private void init(final int page) {
+        setIndicator(getString(R.string.dial), 0, new Intent(this, DialActivity.class), R.drawable.tab_dial_selected);
+        setIndicator(getString(R.string.contacts), 1, new Intent(this, PeopleActivity.class), R.drawable.tab_contact_normal);
+        setIndicator(getString(R.string.sms), 2, new Intent(this, SMSActivity.class), R.drawable.tab_sms_normal);
         mTabHost.setOpenAnimation(true);
-//		onPageSelected(1);
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                initBottomMenu(page);
+            }
+        }, 300);
     }
 
     private void setIndicator(String ss, int tabId, Intent intent, int image_id) {
-
         View localView = LayoutInflater.from(this.mTabHost.getContext()).inflate(R.layout.tab_widget_view, null);
         ((ImageView) localView.findViewById(R.id.main_activity_tab_image)).setImageResource(image_id);
         ((TextView) localView.findViewById(R.id.main_activity_tab_text)).setText(ss);
@@ -123,7 +121,6 @@ public class PhoneTabHostAcitivity extends TabActivity {
     }
 
     public void onPageSelected(int arg0) {
-
         int one = offset * 2 + bmpW;
         Animation animation = null;
         animation = new TranslateAnimation(one * currIndex, one * arg0, 0, 0);
@@ -142,5 +139,4 @@ public class PhoneTabHostAcitivity extends TabActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
-
 }

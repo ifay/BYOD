@@ -3,6 +3,7 @@ package com.byod.launcher;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 
 import java.io.File;
 
@@ -21,10 +22,21 @@ public class AppModel {
     private final File mApkFile;
 
     public AppModel(Context context, ApplicationInfo info) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mInfo = info;
+        if (null != info) {
+            mApkFile = new File(info.sourceDir);
+        } else {
+            mApkFile = null;
+        }
+    }
 
-        mApkFile = new File(info.sourceDir);
+    public AppModel(Context context, String lable, Drawable icon) {
+        mContext = context.getApplicationContext();
+        mInfo = null;
+        mApkFile = null;
+        mAppLabel = lable;
+        mIcon = icon;
     }
 
     public ApplicationInfo getAppInfo() {
@@ -32,47 +44,50 @@ public class AppModel {
     }
 
     public String getApplicationPackageName() {
-        return getAppInfo().packageName;
+        if (null != mInfo) {
+            return mInfo.packageName;
+        } else {
+            return null;
+        }
+
     }
 
     public String getLabel() {
+        if (null != mInfo && null != mApkFile) {
+            if (TextUtils.isEmpty(mAppLabel) || !mMounted) {
+                if (!mApkFile.exists()) {
+                    mMounted = false;
+                    mAppLabel = mInfo.packageName;
+                } else {
+                    mMounted = true;
+                    CharSequence label = mInfo.loadLabel(mContext.getPackageManager());
+                    mAppLabel = label != null ? label.toString() : mInfo.packageName;
+                }
+            }
+        }
         return mAppLabel;
     }
 
     public Drawable getIcon() {
-        if (mIcon == null) {
-            if (mApkFile.exists()) {
-                mIcon = mInfo.loadIcon(mContext.getPackageManager());
-                return mIcon;
-            } else {
-                mMounted = false;
-            }
-        } else if (!mMounted) {
-            // If the app wasn't mounted but is now mounted, reload
-            // its icon.
-            if (mApkFile.exists()) {
-                mMounted = true;
-                mIcon = mInfo.loadIcon(mContext.getPackageManager());
-                return mIcon;
-            }
-        } else {
-            return mIcon;
-        }
-
-        return mContext.getResources().getDrawable(android.R.drawable.sym_def_app_icon);
-    }
-
-
-    void loadLabel(Context context) {
-        if (mAppLabel == null || !mMounted) {
-            if (!mApkFile.exists()) {
-                mMounted = false;
-                mAppLabel = mInfo.packageName;
-            } else {
-                mMounted = true;
-                CharSequence label = mInfo.loadLabel(context.getPackageManager());
-                mAppLabel = label != null ? label.toString() : mInfo.packageName;
+        if (null != mInfo && null != mApkFile) {
+            if (mIcon == null) {
+                if (mApkFile.exists()) {
+                    mIcon = mInfo.loadIcon(mContext.getPackageManager());
+                } else {
+                    mMounted = false;
+                }
+            } else if (!mMounted) {
+                // If the app wasn't mounted but is now mounted, reload
+                // its icon.
+                if (mApkFile.exists()) {
+                    mMounted = true;
+                    mIcon = mInfo.loadIcon(mContext.getPackageManager());
+                }
             }
         }
+        if (null == mIcon) {
+            return mContext.getResources().getDrawable(android.R.drawable.sym_def_app_icon);
+        }
+        return mIcon;
     }
 }

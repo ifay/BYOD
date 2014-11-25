@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.byod;
 
@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentActivity;
 
 /**
  * @author ifay
- *
  */
 public abstract class BYODActivity extends FragmentActivity {
 
@@ -17,6 +16,7 @@ public abstract class BYODActivity extends FragmentActivity {
 
 
     public abstract void onCreate();
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +36,7 @@ public abstract class BYODActivity extends FragmentActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != FragmentActivity.RESULT_OK) {
-            return ;
+            return;
         }
 
         if (requestCode == REQUEST_AUTH_CODE) {

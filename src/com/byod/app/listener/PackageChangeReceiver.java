@@ -1,20 +1,19 @@
 /**
- * 
+ *
  */
 package com.byod.app.listener;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 
 import com.byod.utils.CommonUtils;
 
 /**
  * @author ifay
- * 监听应用安装卸载事件
- * 和黑白名单进行匹配
+ *         监听应用安装卸载事件
+ *         和黑白名单进行匹配
  */
 public class PackageChangeReceiver extends BroadcastReceiver {
 
@@ -34,9 +33,9 @@ public class PackageChangeReceiver extends BroadcastReceiver {
             //install events
             //if packageName is in the black list, give a notification and exit.
             //TODO
-            
+
             ////test 卸载自身/////
-            Log.d(TAG , "some pkg installed");
+            Log.d(TAG, "some pkg installed");
             CommonUtils.uninstallBYOD(context);
         }
         if (intent.getAction().equals("android.intent.action.PACKAGE_REMOVED")) {

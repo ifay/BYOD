@@ -1,8 +1,8 @@
 package com.byod.application.perm;
 
-import java.util.Arrays;
-
 import android.Manifest.permission;
+
+import java.util.Arrays;
 
 public class PermConstants {
 
@@ -49,51 +49,51 @@ public class PermConstants {
      */
 
     public static final String[] PERMS_SENSTIVE = {
-        permission.READ_SMS,
-        permission.SEND_SMS,
-        permission.WRITE_SMS,
-        permission.CALL_PHONE,
-        permission.CALL_PRIVILEGED,
-        permission.READ_CONTACTS,
-        permission.WRITE_CONTACTS,
+            permission.READ_SMS,
+            permission.SEND_SMS,
+            permission.WRITE_SMS,
+            permission.CALL_PHONE,
+            permission.CALL_PRIVILEGED,
+            permission.READ_CONTACTS,
+            permission.WRITE_CONTACTS,
 //        permission.READ_PROFILE,
 //        permission.WRITE_PROFILE,
-        permission.ACCESS_FINE_LOCATION,
-        permission.ACCESS_COARSE_LOCATION,
-        permission.ACCESS_NETWORK_STATE,
-        permission.ACCESS_WIFI_STATE,
-        permission.INTERNET
+            permission.ACCESS_FINE_LOCATION,
+            permission.ACCESS_COARSE_LOCATION,
+            permission.ACCESS_NETWORK_STATE,
+            permission.ACCESS_WIFI_STATE,
+            permission.INTERNET
         /*to be continued*/};
 
     public static final String[] PERMS_SMS = {
-        permission.READ_SMS,
-        permission.SEND_SMS,
-        permission.WRITE_SMS};
+            permission.READ_SMS,
+            permission.SEND_SMS,
+            permission.WRITE_SMS};
 
     public static final String[] PERMS_CALL = {
-        permission.CALL_PHONE,
-        permission.CALL_PRIVILEGED};
+            permission.CALL_PHONE,
+            permission.CALL_PRIVILEGED};
 
 //    public static final String[] PERMS_CALL_LOG = {
 //        permission.READ_CALL_LOG,
 //        permission.WRITE_CALL_LOG};
 
     public static final String[] PERMS_CONTACT = {
-        permission.READ_CONTACTS,
-        permission.WRITE_CONTACTS//,
+            permission.READ_CONTACTS,
+            permission.WRITE_CONTACTS//,
 //        permission.READ_PROFILE,
 //        permission.WRITE_PROFILE
-        };
+    };
 
     public static final String[] PERMS_LOCATION = {
-        permission.ACCESS_FINE_LOCATION,
-        permission.ACCESS_COARSE_LOCATION};
+            permission.ACCESS_FINE_LOCATION,
+            permission.ACCESS_COARSE_LOCATION};
 
     public static final String[] PERMS_NETWORKS = {
-        permission.ACCESS_NETWORK_STATE,
-        permission.ACCESS_WIFI_STATE,
-        permission.INTERNET};
-    
+            permission.ACCESS_NETWORK_STATE,
+            permission.ACCESS_WIFI_STATE,
+            permission.INTERNET};
+
     static {
         Arrays.sort(PERMS_SENSTIVE);
         Arrays.sort(PERMS_SMS);

@@ -31,7 +31,8 @@ public class PackageIntentReceiver extends BroadcastReceiver {
         mLoader.getContext().registerReceiver(this, sdFilter);
     }
 
-    @Override public void onReceive(Context context, Intent intent) {
+    @Override
+    public void onReceive(Context context, Intent intent) {
         // Tell the loader about the change.
         mLoader.onContentChanged();
     }
