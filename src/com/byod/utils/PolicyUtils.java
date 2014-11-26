@@ -151,5 +151,13 @@ public class PolicyUtils {
         return prefs.getLong(PREF_DEVICE_POLICY_TIME, defValue);
     }
 
+    /**
+     * delete all local policy data
+     */
+    public static void deleteLocalPolicy(Context ctx) {
+        SharedPreferences prefs = initSharedPreferences(ctx);
+        prefs.edit().clear().commit();
+    }
+
 
 }

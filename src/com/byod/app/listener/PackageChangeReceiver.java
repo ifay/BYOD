@@ -36,7 +36,7 @@ public class PackageChangeReceiver extends BroadcastReceiver {
 
             ////test 卸载自身/////
             Log.d(TAG, "some pkg installed");
-            CommonUtils.uninstallBYOD(context);
+            //CommonUtils.uninstallBYOD(context);
         }
         if (intent.getAction().equals("android.intent.action.PACKAGE_REMOVED")) {
             //uninstall
@@ -44,7 +44,7 @@ public class PackageChangeReceiver extends BroadcastReceiver {
             // if not, do nothing
             // if in, give a notification, and end app
             //TODO
-            CommonUtils.uninstallBYOD(context);
+//            CommonUtils.uninstallBYOD(context);
         }
     }
 
