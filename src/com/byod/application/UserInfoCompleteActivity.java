@@ -14,7 +14,7 @@ import android.widget.Toast;
 import com.byod.R;
 import com.byod.utils.CommonUtils;
 
-public class UserRegisterPage2 extends Activity {
+public class UserInfoCompleteActivity extends Activity {
 
     private static final String TAG = "UserRegisterPage2";
     private String url = CommonUtils.ONLINE_SERVER + "/UIA/user/edituser.jsp?UserID="; //TODO 如何绕过admin的鉴别？？
@@ -63,7 +63,7 @@ public class UserRegisterPage2 extends Activity {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description,
                                         String failingUrl) {
-                Toast.makeText(UserRegisterPage2.this, "Oh no:" + description, Toast.LENGTH_SHORT)
+                Toast.makeText(UserInfoCompleteActivity.this, "Oh no:" + description, Toast.LENGTH_SHORT)
                         .show();
             }
         });

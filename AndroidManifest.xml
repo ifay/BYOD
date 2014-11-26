@@ -27,6 +27,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <permission android:name="android.permission.DELETE_PACKAGES" />
 
@@ -45,16 +47,14 @@
         android:label="@string/app_name"
         android:launchMode="singleTask"
         android:stateNotNeeded="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+>
 
-        <!-- 认证界面：每次通过图表进入应用都需要认证 -->
-        <activity
-            android:name="com.byod.AuthenticateActivity"
-            android:excludeFromRecents="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTask"
-            android:screenOrientation="nosensor"
-            android:taskAffinity="com.byod.auth" >
+        <!-- 预检测界面 -->
+        <activity 
+            android:name="com.byod.WelcomeActivity"
+            android:taskAffinity="com.byod.auth">
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -63,6 +63,17 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+
+        <!-- 认证界面：每次通过icon进入应用都需要认证 -->
+        <activity
+            android:name="com.byod.AuthenticateActivity"
+            android:excludeFromRecents="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="nosensor"
+            android:taskAffinity="com.byod.auth" >
+            
         </activity>
 
         <!-- launcher界面 -->
@@ -74,10 +85,11 @@
         <activity android:name="com.byod.MainActivity" >
         </activity>
         <!-- 注册页面 -->
-        <activity android:name="com.byod.application.UserRegisterPage1" >
+        <activity android:name="com.byod.application.DeviceRegisterActivity"
+            >
         </activity>
         <!-- 注册页面 -->
-        <activity android:name="com.byod.application.UserRegisterPage2" >
+        <activity android:name="com.byod.application.UserInfoCompleteActivity" >
         </activity>
 
         <!-- service monitor the top task activity -->

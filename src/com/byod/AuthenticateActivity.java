@@ -18,7 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.byod.application.UserRegisterPage1;
+import com.byod.application.DeviceRegisterActivity;
 import com.byod.launcher.HomeScreen;
 import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
@@ -30,6 +30,8 @@ import com.byod.utils.PolicyUtils;
  * @author ifay 认证界面 1.完成对用户的认证 2.检查设备合规性 3.提供随机键盘
  */
 public class AuthenticateActivity extends BYODActivity {
+
+    private String TAG = "AuthenticateActivity";
 
     public Intent intent = null;
     private Button commit;
@@ -43,6 +45,7 @@ public class AuthenticateActivity extends BYODActivity {
     private static final int MSG_COMPLIANCED = 1000;
     private static final int MSG_NOT_COMPLIANCED = 1001; // 合规性检测失败
     private static final int MSG_NOT_ADMIN = 1002; // 未开启设备管理器
+    private static final int MSG_ADMINED = 1003;    //设备管理器已开启
     private static final int MSG_AUTH_SUCCESS = 2000;
     private static final int MSG_AUTH_FAILED = 2001; // 认证失败
     private static final int MSG_AUTH_NOT_PAIRED = 2002; // 设备和用户不匹配
@@ -64,6 +67,10 @@ public class AuthenticateActivity extends BYODActivity {
                     setResult(Activity.RESULT_CANCELED, intent);
                     CommonUtils.exitBYOD(mActivity);
                     break;
+                case MSG_ADMINED:
+                    //管理器已开启
+                    //TODO
+                    break;
                 case MSG_NOT_ADMIN:
                     // 合规性检测失败,退出应用
                     Toast.makeText(mActivity, "未开启设备管理器功能，应用即将退出", Toast.LENGTH_LONG).show();
@@ -72,11 +79,11 @@ public class AuthenticateActivity extends BYODActivity {
                     break;
                 case MSG_COMPLIANCED:
                     // 合规性检测成功
-                    Log.d("AuthenticateActivity", "MSG_COMPLIANCED");
+                    Log.d(TAG, "MSG_COMPLIANCED");
                     break;
                 case MSG_AUTH_SUCCESS:
                     // 认证成功
-                    Log.d("AuthenticateActivity", "MSG_AUTH_SUCCESS");
+                    Log.d(TAG, "MSG_AUTH_SUCCESS");
                     intent = getIntent();
                     if (intent.getPackage() == null) {
                         i = new Intent(mActivity, HomeScreen.class);
@@ -90,16 +97,26 @@ public class AuthenticateActivity extends BYODActivity {
                     break;
                 case MSG_AUTH_FAILED:
                     // 用户认证失败
-                    Log.d("AuthenticateActivity", "MSG_AUTH_USER_FAILED");
+                    Log.d(TAG, "MSG_AUTH_USER_FAILED");
                     sAuthFailTime += 1;
                     popLockUserDialog();
                     break;
                 case MSG_AUTH_NO_POLICY_RECORD:
                     //无策略记录，进入RegisterPage1
-                    Log.d("AuthenticateActivity", "MSG_AUTH_NO_POLICY_RECORD");
-                    i = new Intent(mActivity, UserRegisterPage1.class);
+                    Log.d(TAG, "MSG_AUTH_NO_POLICY_RECORD");
+                    i = new Intent(mActivity, DeviceRegisterActivity.class);
                     startActivity(i);
                     break;
+                case MSG_AUTH_NOT_PAIRED:
+                    //用户与设备不匹配
+                    Log.d(TAG,"MSG_AUTH_NOT_PAIRED");
+                    String userAccount = msg.getData().getString("userAccount");
+                    //用户和设备不匹配，非本人设备，要求用户退出
+                    Toast.makeText(mActivity, "此设备非" + userAccount + "所属\n" +
+                            "应用将退出...", Toast.LENGTH_LONG).show();
+                    CommonUtils.exitBYOD(mActivity);
+                    break;
+                   
                 default:
                     break;
             }
@@ -116,7 +133,6 @@ public class AuthenticateActivity extends BYODActivity {
         passwdView = (EditText) findViewById(R.id.passwd);
         accountView = (EditText) findViewById(R.id.account);
         passwdView.setOnTouchListener(onTouchListener);
-        accountView.setOnTouchListener(onTouchListener);
         commit.setOnClickListener(onClickChangedListener);
     }
 
@@ -128,32 +144,31 @@ public class AuthenticateActivity extends BYODActivity {
             int inputType = ((EditText) v).getInputType();
             ((EditText) v).setInputType(InputType.TYPE_NULL);
             if (keyboardUtil == null) {
-                keyboardUtil = new KeyboardUtil(mActivity, mActivity, (EditText) v);
+                keyboardUtil = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
             keyboardUtil.showKeyboard();
             ((EditText) v).setInputType(inputType);
 
-            if (v == passwdView) {
-                //用户account输入完成后，检查用户是否和设备绑定
-                final String userAccount = accountView.getText().toString().trim();
-                final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
-                // 检查用户是否和设备绑定
-                Thread t = new Thread(new Runnable() {
+            final String userAccount = accountView.getText().toString().trim();
+            final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
 
-                    @Override
-                    public void run() {
-                        boolean paired = AuthUtils.isUserAndDeviceBinded(userAccount, deviceID);
-                        if (!paired) {
-                            handler.sendEmptyMessage(MSG_AUTH_NOT_PAIRED);
-                            //用户和设备不匹配，非本人设备，要求用户退出
-                            Toast.makeText(mActivity, "此设备非" + userAccount + "所属\n" +
-                                    "应用将退出...", Toast.LENGTH_LONG).show();
-                            CommonUtils.exitBYOD(mActivity);
-                        }
+            // 检查用户是否和设备绑定
+            Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    boolean paired = AuthUtils.isUserAndDeviceBinded(userAccount, deviceID);
+                    if (!paired) {
+                        Message msg = new Message();
+                        msg.what = MSG_AUTH_NOT_PAIRED;
+                        Bundle data = new Bundle();
+                        data.putString("userAccount", userAccount);
+                        msg.setData(data);
+                        handler.sendEmptyMessage(MSG_AUTH_NOT_PAIRED);
                     }
-                });
-                t.start();
-            }
+                }
+            });
+            t.start();
             return false;
         }
     };
@@ -189,6 +204,8 @@ public class AuthenticateActivity extends BYODActivity {
         }
     };
 
+
+
     /**
      * 登录次数超过允许值时，弹出提示窗口，确认后退出应用，服务器将锁定账户及设备
      */
@@ -220,15 +237,18 @@ public class AuthenticateActivity extends BYODActivity {
         super.onResume();
         intent = getIntent();
 
-        //0.检查本地是否有策略记录
+        //0.检测是否开启Device admin
+        if (!PolicyUtils.isAdminActive(mActivity)) {
+            PolicyUtils.activateDeviceAdmin(mActivity);
+        } else {
+            handler.sendEmptyMessage(MSG_ADMINED);
+        }
+
+        //1.检查本地是否有策略记录，即设备是否已注册过
         if (PolicyUtils.getLatestPolicyTime(mActivity, 0L) == 0L) {
             handler.sendEmptyMessage(MSG_AUTH_NO_POLICY_RECORD);
         }
 
-        // 1.检测是否开启Device admin
-        if (!PolicyUtils.isAdminActive(mActivity)) {
-            PolicyUtils.activateDeviceAdmin(mActivity);
-        }
 
         // 2. check the device compliance
         Thread t = new Thread(new Runnable() {
@@ -257,6 +277,7 @@ public class AuthenticateActivity extends BYODActivity {
         Log.d("AuthenticateActivity", "onBackPressed");
         // clear Keyboard first
         if (keyboardUtil != null && keyboardUtil.keyboardIsShown()) {
+            Log.d(TAG , "hide keyboard");
             keyboardUtil.hideKeyboard();
         }
         super.onBackPressed();

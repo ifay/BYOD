@@ -28,7 +28,8 @@ public class HomeScreen extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (!BYODApplication.loggedIn) {
+        
+        if (!getIntent().getBooleanExtra("isLoggedIn", false) && !BYODApplication.loggedIn) {
             Intent intent = new Intent(this, AuthenticateActivity.class);
             startActivityForResult(intent, BYODActivity.REQUEST_AUTH_CODE);
         }

@@ -10,6 +10,7 @@ import android.inputmethodservice.Keyboard.Key;
 import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -27,20 +28,18 @@ public class KeyboardUtil {
     private Context ctx;
     private Activity act;
     private KeyboardView keyboardView;
-    private Keyboard kNum;  //数字键盘
     private Keyboard kChar; //字母键盘
-    private boolean isNum = false;  //是否数字键盘
     private boolean isUpper = false;    //是否大写
 
     private EditText ed;
+    private String TAG = "KeyboardUtil";
 
-    public KeyboardUtil(Activity act, Context ctx, EditText edit) {
+    public KeyboardUtil(Activity act, Context ctx, EditText edit, int viewID) {
         this.act = act;
         this.ctx = ctx;
         this.ed = edit;
-        kNum = new Keyboard(ctx, R.xml.symbols);
         kChar = new Keyboard(ctx, R.xml.qwerty);
-        keyboardView = (KeyboardView) act.findViewById(R.id.keyboard_view);
+        keyboardView = (KeyboardView) act.findViewById(viewID);
         keyboardView.setKeyboard(kChar);
         keyboardView.setEnabled(true);
         keyboardView.setPreviewEnabled(true);
@@ -49,6 +48,8 @@ public class KeyboardUtil {
 
     public void showKeyboard() {
         if (keyboardView.getVisibility() != View.VISIBLE) {
+            Log.d(TAG ,"set visible");
+            keyboardView.setKeyboard(kChar);
             keyboardView.setVisibility(View.VISIBLE);
         }
     }
@@ -72,9 +73,6 @@ public class KeyboardUtil {
                     break;
                 case Keyboard.KEYCODE_SHIFT: //大小写切换
                     switchKey();
-                    break;
-                case Keyboard.KEYCODE_MODE_CHANGE:  //键盘切换
-                    changeKeyboard();
                     break;
                 case 57419: // go left
                     if (start > 0) {
@@ -135,42 +133,21 @@ public class KeyboardUtil {
         return keyboardView.getVisibility() == View.VISIBLE ? true : false;
     }
 
-    /**
-     * 切换数字、字母键盘
-     */
-    public void changeKeyboard() {
-        if (isNum) {
-            keyboardView.setKeyboard(kChar);
-        } else {
-            keyboardView.setKeyboard(kNum);
-        }
-        isNum = !isNum;
-        randomKey();
-    }
 
     /**
      * 随机布局
+     * 应该从服务器获取键值排列 TODO
      */
     private void randomKey() {
         List<Key> keyList;
         List<Key> newkeyList = new ArrayList<Key>();
-        if (isNum) {
-            //数字键
-            keyList = kNum.getKeys();
-            for (int i = 0; i < keyList.size(); i++) {
-                if (keyList.get(i).label != null && isNumberKey(keyList.get(i))) {
-                    newkeyList.add(keyList.get(i));
-                }
+        //获得待随机化的key序列
+        keyList = kChar.getKeys();
+        for (int i = 0; i < keyList.size(); i++) {
+            if (keyList.get(i).label != null && isWordKey(keyList.get(i))) {
+                newkeyList.add(keyList.get(i));
             }
-        } else {
-            //字母键
-            keyList = kChar.getKeys();
-            for (int i = 0; i < keyList.size(); i++) {
-                if (keyList.get(i).label != null && isWordKey(keyList.get(i))) {
-                    newkeyList.add(keyList.get(i));
-                }
-            }
-        }//if else
+        }
         int size = newkeyList.size();
         for (int i = 0; i < size; i++) {
             int random_a = (int) (Math.random() * (size));
@@ -185,29 +162,21 @@ public class KeyboardUtil {
             newkeyList.get(random_b).codes[0] = code;
             newkeyList.get(random_b).label = label;
         }
-        if (isNum) {
-            keyboardView.setKeyboard(kNum);
-        } else {
-            keyboardView.setKeyboard(kChar);
-        }
-    }
-
-    private boolean isWordKey(Key k) {
-        if (isUpper) {
-            return (k.codes[0] > 64 && k.codes[0] < 91);
-        } else
-            return (k.codes[0] > 96 && k.codes[0] < 123);
+        keyboardView.setKeyboard(kChar);
     }
 
     /**
      * 数字code:48-57
      *
-     * @param k
-     * @return
      */
-    private boolean isNumberKey(Key k) {
-        return (k.codes[0] > 47 && k.codes[0] < 58);
+    private boolean isWordKey(Key k) {
+        boolean numKey = (k.codes[0] > 47 && k.codes[0] < 58);
+        if (isUpper) {
+            return (k.codes[0] > 64 && k.codes[0] < 91) || numKey;
+        } else
+            return (k.codes[0] > 96 && k.codes[0] < 123) || numKey;
     }
+
 
     /**
      * 大小写切换 ：小-32=大

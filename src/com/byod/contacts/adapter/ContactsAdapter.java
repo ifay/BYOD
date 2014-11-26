@@ -31,7 +31,7 @@ public class ContactsAdapter extends BaseAdapter {
         this.ctx = context;
         this.inflater = LayoutInflater.from(context);
         this.mContactList = list;
-        this.mAlphaIndexer = new HashMap<>();
+        this.mAlphaIndexer = new HashMap<String,Integer>();
 
         for (int i = 0; i < list.size(); i++) {
             String name = getAlpha(list.get(i).getSortKey());

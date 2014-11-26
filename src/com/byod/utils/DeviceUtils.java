@@ -29,6 +29,10 @@ public class DeviceUtils {
     private static String TEL = null;
     private static String WLAN_MAC = null;   //形如00:11:22:33:44:55，易被伪造
     private static String BLUETOOTH_MAC = null;  //仅支持有蓝牙的设备
+    private static String sDeviceManufacturer = null;
+    private static String sDeviceOS = Build.VERSION.RELEASE;
+
+    
     //根据ROM版本、制造商、CPU等硬件信息制作的伪ID，相同的硬件及ROM镜像时
     public static String PseudoID = "35" + Build.BOARD.length() % 10 + Build.BRAND.length() % 10 +
             Build.CPU_ABI.length() % 10 + Build.DEVICE.length() % 10 + Build.DISPLAY.length() % 10
@@ -56,6 +60,7 @@ public class DeviceUtils {
         if (null != bluetoothAdapter) {
             BLUETOOTH_MAC = bluetoothAdapter.getAddress();
         }
+        sDeviceManufacturer = Build.MANUFACTURER.toLowerCase();
     }
 
 
@@ -73,8 +78,10 @@ public class DeviceUtils {
      * SHA1方法计算DeviceID
      */
     public String getsDeviceIdSHA1() {
-        String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
-        sDeviceID = CommonUtils.cryptSH1(longID);
+        if (sDeviceID.length() < 1) { 
+            String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+            sDeviceID = CommonUtils.cryptSH1(longID);
+        }
         return sDeviceID;
     }
 
@@ -108,7 +115,7 @@ public class DeviceUtils {
      * 将设备信息发送至服务器，由服务器进行检测
      *
      * @param context
-     * @return 0：通过。正数：某条策略未通过
+     * @return 0-通过。正数-某条策略未通过
      */
     public static int isDeviceComplianced(Context context) {
         //1.sync the newest policy
@@ -122,12 +129,12 @@ public class DeviceUtils {
     }
 
     /**
-     * 向服务器查询用户所有设备数目
-     *
+     * 向服务器查询用户所有设备数目 
+     * TODO 线程处理  
      * @param userAccount 用户账户唯一标识，此处用邮箱
-     * @return 用户所绑定的设备数目
+     * @return 用户所绑定的设备数目. -1表示密码错误
      */
-    public static int getUserDeviceNum(String userAccount) {
+    public static int getUserDeviceNum(String userAccount, String userPwd) {
         //TODO
         return 0;
     }
@@ -139,5 +146,54 @@ public class DeviceUtils {
      */
     public static boolean isRooted() {
         return RootTools.isRootAvailable() && RootTools.isAccessGiven();
+    }
+
+    /**
+     * 检测是否锁定
+     * @return false:not locked; true:locked
+     */
+    public boolean isDeviceLocked() {
+        if (sDeviceID == null || sDeviceID.length() < 1) {
+            getsDeviceIdSHA1();
+        }
+        //TODO communicate with server
+        return false;
+    }
+
+    /**
+     * TODO 线程处理
+     * 新设备注册前需要由其他已注册的设备同意，注册参数：生产商，设备ID
+     */
+    public boolean sendRegReqToPeerDevice() {
+        //send only device os, version to server
+        //sDeviceManufacturer
+        //sDeviceID
+        return CommonUtils.SUCCESS;
+    }
+    
+    /**
+     * TODO 想服务器查询设备注册请求是否已被批准 线程处理
+     * @return
+     */
+    public boolean isRegReqApproved() {
+        //send req to server, select by deviceiD
+        return true;
+    }
+    
+    /**
+     * 注册设备 TODO 线程处理
+     * @return
+     */
+    public boolean registerDevice() {
+        //send device info to the server
+        return CommonUtils.SUCCESS;
+    }
+    
+    /**
+     * 向服务器查询注册请求是否通过 TODO 线程处理
+     * @return
+     */
+    public boolean checkRegRequestApproved() {
+        return CommonUtils.SUCCESS;
     }
 }
