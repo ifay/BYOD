@@ -9,9 +9,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import com.byod.R;
-import com.byod.contacts.bean.SMSBean;
-import com.byod.contacts.uitl.BaseIntentUtil;
-import com.byod.contacts.uitl.RexseeSMS;
+import com.byod.bean.SMSBean;
+import com.byod.utils.BaseIntentUtil;
+import com.byod.utils.RexseeSMS;
 import com.byod.sms.adapter.SMSAdapter;
 
 import java.util.HashMap;

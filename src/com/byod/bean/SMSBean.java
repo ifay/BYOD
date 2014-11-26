@@ -1,4 +1,4 @@
-package com.byod.contacts.bean;
+package com.byod.bean;
 
 public class SMSBean {
 

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,10 +18,14 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryFactory;
+import com.byod.data.IAsyncQueryHandler;
 import com.byod.R;
-import com.byod.contacts.bean.ContactBean;
-import com.byod.contacts.uitl.BaseIntentUtil;
+import com.byod.contacts.data.ContactsAsyncQueryFactory;
 import com.byod.contacts.adapter.ContactsAdapter;
+import com.byod.bean.ContactBean;
+import com.byod.utils.BaseIntentUtil;
 import com.byod.sms.activities.MessageBoxList;
 import com.byod.ui.QuickAlphabeticBar;
 
@@ -31,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PeopleActivity extends Activity {
+public class PeopleActivity extends Activity implements  IAsyncQueryHandler{
     private static String[] itemActions = new String[]{"拨打电话", "发送短信", "查看详细", "删除", "修改头像"};
 
     private ContactsAdapter adapter;
@@ -42,6 +45,8 @@ public class PeopleActivity extends Activity {
     private Button addContactBtn;
 
     private Map<Integer, ContactBean> contactIdMap = null;
+
+    private IAsyncQueryFactory mAsyncQueryFactory;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,75 +64,68 @@ public class PeopleActivity extends Activity {
             }
         });
 
-        // TODO 数据库操作分离出去
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // 联系人的Uri
-        String[] projection = {
-                BaseColumns._ID,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.DATA1,
-                "sort_key",
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-                ContactsContract.CommonDataKinds.Phone.PHOTO_ID,
-                ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY
-        }; // 查询的列
-        asyncQuery = new MyAsyncQueryHandler(getContentResolver());
-        asyncQuery.startQuery(0, null, uri, projection, null, null,
-                "sort_key COLLATE LOCALIZED asc"); // 按照sort_key升序查询
+        mAsyncQueryFactory = new ContactsAsyncQueryFactory(getContentResolver(), this);
+        IAsyncQuery query = mAsyncQueryFactory.getSystemAsyncQuery();
+        query.startQuery();
     }
 
     /**
-     * 数据库异步查询类AsyncQueryHandler
-     *
-     * @author administrator
+     * 查询结束的回调函数
      */
-    private class MyAsyncQueryHandler extends AsyncQueryHandler {
-        public MyAsyncQueryHandler(ContentResolver cr) {
-            super(cr);
-        }
+    @Override
+    public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+        if (cursor != null && cursor.getCount() > 0) {
+            contactIdMap = new HashMap<Integer, ContactBean>();
 
-        /**
-         * 查询结束的回调函数
-         */
-        @Override
-        protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor != null && cursor.getCount() > 0) {
-                contactIdMap = new HashMap<Integer, ContactBean>();
+            list = new ArrayList<ContactBean>();
+            cursor.moveToFirst();
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                String name = cursor.getString(1);
+                String number = cursor.getString(2);
+                String sortKey = cursor.getString(3);
+                int contactId = cursor.getInt(4);
+                Long photoId = cursor.getLong(5);
+                String lookUpKey = cursor.getString(6);
 
-                list = new ArrayList<ContactBean>();
-                cursor.moveToFirst();
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    cursor.moveToPosition(i);
-                    String name = cursor.getString(1);
-                    String number = cursor.getString(2);
-                    String sortKey = cursor.getString(3);
-                    int contactId = cursor.getInt(4);
-                    Long photoId = cursor.getLong(5);
-                    String lookUpKey = cursor.getString(6);
-
-                    if (contactIdMap.containsKey(contactId)) {
-                        continue;
-                    } else {
-                        ContactBean cb = new ContactBean();
-                        cb.setDisplayName(name);
+                if (contactIdMap.containsKey(contactId)) {
+                    continue;
+                } else {
+                    ContactBean cb = new ContactBean();
+                    cb.setDisplayName(name);
 //					if (number.startsWith("+86")) {// 去除多余的中国地区号码标志，对这个程序没有影响。
 //						cb.setPhoneNum(number.substring(3));
 //					} else {
-                        cb.setPhoneNum(number);
+                    cb.setPhoneNum(number);
 //					}
-                        cb.setSortKey(sortKey);
-                        cb.setContactId(contactId);
-                        cb.setPhotoId(photoId);
-                        cb.setLookUpKey(lookUpKey);
-                        list.add(cb);
+                    cb.setSortKey(sortKey);
+                    cb.setContactId(contactId);
+                    cb.setPhotoId(photoId);
+                    cb.setLookUpKey(lookUpKey);
+                    list.add(cb);
 
-                        contactIdMap.put(contactId, cb);
-                    }
-                }
-                if (list.size() > 0) {
-                    setAdapter(list);
+                    contactIdMap.put(contactId, cb);
                 }
             }
+            if (list.size() > 0) {
+                setAdapter(list);
+            }
         }
+    }
+
+    @Override
+    public void onDeleteComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onUpdateComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onInsertComplete(int token, Object cookie, Uri uri) {
+
     }
 
     private void setAdapter(List<ContactBean> list) {

@@ -15,7 +15,7 @@ import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import com.byod.R;
-import com.byod.contacts.bean.ContactBean;
+import com.byod.bean.ContactBean;
 import com.byod.ui.QuickAlphabeticBar;
 
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.byod.contacts.uitl;
+package com.byod.utils;
 
 import android.app.Activity;
 import android.content.Intent;

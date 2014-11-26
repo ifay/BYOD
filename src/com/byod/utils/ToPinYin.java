@@ -1,4 +1,4 @@
-package com.byod.contacts.uitl;
+package com.byod.utils;
 
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;

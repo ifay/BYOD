@@ -1,4 +1,4 @@
-package com.byod.contacts.uitl;
+package com.byod.utils;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;

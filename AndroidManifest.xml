@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
@@ -117,9 +118,9 @@
             android:label="@string/contactsActivityLabel"
             android:launchMode="singleTask"
             android:process=":contacts"
+            android:screenOrientation="portrait"
             android:taskAffinity="com.byod.auth"
             android:theme="@style/AppTheme"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -137,9 +138,9 @@
             android:label="@string/dialActivityLabel"
             android:launchMode="singleTask"
             android:process=":contacts"
+            android:screenOrientation="portrait"
             android:taskAffinity="com.byod.auth"
             android:theme="@style/AppTheme"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
         <activity
@@ -149,9 +150,9 @@
             android:label="@string/smsActivityLabel"
             android:launchMode="singleTask"
             android:process=":contacts"
+            android:screenOrientation="portrait"
             android:taskAffinity="com.byod.auth"
             android:theme="@style/AppTheme"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
         <activity
@@ -161,22 +162,29 @@
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
         <activity
-            android:name=".sms.activities.MessageBoxList"
+            android:name="com.byod.sms.activities.MessageBoxList"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
-            android:name=".sms.activities.NewSMSActivity"
+            android:name="com.byod.sms.activities.NewSMSActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
-            android:name=".sms.activities.SelectContactsToSendActivity"
+            android:name="com.byod.sms.activities.SelectContactsToSendActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
-        <service
-            android:name="com.byod.contacts.service.T9Service" />
+
+        <service android:name=".dial.service.T9Service" />
+
+        <provider
+            android:name=".contacts.data.ContactsContentProvider"
+            android:authorities="com.byod.contacts"
+            android:enabled="true"
+            android:exported="false" >
+        </provider>
     </application>
 
 </manifest>

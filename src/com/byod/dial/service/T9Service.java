@@ -1,4 +1,4 @@
-package com.byod.contacts.service;
+package com.byod.dial.service;
 //T9搜索
 
 import android.app.Service;
@@ -15,7 +15,7 @@ import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 
 import com.byod.BYODApplication;
-import com.byod.contacts.bean.ContactBean;
+import com.byod.bean.ContactBean;
 
 import java.util.ArrayList;
 

@@ -27,7 +27,7 @@ import android.widget.ListView;
 
 import com.byod.BYODApplication;
 import com.byod.R;
-import com.byod.contacts.bean.CallLogBean;
+import com.byod.bean.CallLogBean;
 import com.byod.dial.adapter.DialAdapter;
 import com.byod.dial.adapter.T9Adapter;
 

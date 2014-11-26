@@ -32,8 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byod.R;
-import com.byod.contacts.bean.ContactBean;
-import com.byod.contacts.uitl.BaseIntentUtil;
+import com.byod.bean.ContactBean;
+import com.byod.utils.BaseIntentUtil;
 import com.byod.sms.adapter.NewSmsAdapter;
 import com.byod.ui.MyViewGroup;
 import com.google.gson.Gson;

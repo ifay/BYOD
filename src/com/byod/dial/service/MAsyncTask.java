@@ -1,4 +1,4 @@
-package com.byod.contacts.service;
+package com.byod.dial.service;
 //a-z搜索
 
 import android.content.Context;
@@ -8,8 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import com.byod.contacts.bean.ContactBean;
-import com.byod.contacts.uitl.ToPinYin;
+import com.byod.bean.ContactBean;
+import com.byod.utils.ToPinYin;
 
 import java.util.ArrayList;
 

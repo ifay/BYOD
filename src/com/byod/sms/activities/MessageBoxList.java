@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byod.R;
-import com.byod.contacts.bean.MessageBean;
+import com.byod.bean.MessageBean;
 import com.byod.sms.adapter.MessageBoxListAdapter;
 
 import java.sql.Date;

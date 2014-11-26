@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.byod.R;
-import com.byod.contacts.bean.MessageBean;
+import com.byod.bean.MessageBean;
 
 import java.util.List;
 

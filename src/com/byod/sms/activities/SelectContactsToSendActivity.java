@@ -16,8 +16,8 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.byod.R;
-import com.byod.contacts.bean.ContactBean;
-import com.byod.contacts.uitl.BaseIntentUtil;
+import com.byod.bean.ContactBean;
+import com.byod.utils.BaseIntentUtil;
 import com.byod.sms.adapter.SelectContactsToSendAdapter;
 import com.byod.ui.QuickAlphabeticBar;
 import com.google.gson.Gson;
