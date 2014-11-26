@@ -29,7 +29,7 @@ import com.byod.BYODApplication;
 import com.byod.R;
 import com.byod.contacts.bean.CallLogBean;
 import com.byod.dial.adapter.DialAdapter;
-import com.byod.contacts.view.adapter.T9Adapter;
+import com.byod.dial.adapter.T9Adapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

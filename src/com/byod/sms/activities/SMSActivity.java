@@ -13,8 +13,6 @@ import com.byod.contacts.bean.SMSBean;
 import com.byod.contacts.uitl.BaseIntentUtil;
 import com.byod.contacts.uitl.RexseeSMS;
 import com.byod.sms.adapter.SMSAdapter;
-import com.byod.contacts.view.sms.MessageBoxList;
-import com.byod.contacts.view.sms.NewSMSActivity;
 
 import java.util.HashMap;
 import java.util.List;

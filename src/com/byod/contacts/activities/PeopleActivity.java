@@ -23,7 +23,7 @@ import com.byod.R;
 import com.byod.contacts.bean.ContactBean;
 import com.byod.contacts.uitl.BaseIntentUtil;
 import com.byod.contacts.adapter.ContactsAdapter;
-import com.byod.contacts.view.sms.MessageBoxList;
+import com.byod.sms.activities.MessageBoxList;
 import com.byod.ui.QuickAlphabeticBar;
 
 import java.util.ArrayList;

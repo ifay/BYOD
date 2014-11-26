@@ -161,17 +161,17 @@
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
         <activity
-            android:name="com.byod.contacts.view.sms.MessageBoxList"
+            android:name=".sms.activities.MessageBoxList"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
-            android:name="com.byod.contacts.view.sms.NewSMSActivity"
+            android:name=".sms.activities.NewSMSActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
-            android:name="com.byod.contacts.view.sms.SelectContactsToSendActivity"
+            android:name=".sms.activities.SelectContactsToSendActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
