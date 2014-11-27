@@ -129,45 +129,6 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    private void addNewDeviceDialog() {
-        AlertDialog.Builder builder = new Builder(mActivity);
-        builder.setTitle("新增设备");
-        builder.setMessage("是否添加此设备为您名下的使用设备？");
-        builder.setPositiveButton("添加", new OnClickListener() {
-            Intent intent;
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        //注册设备
-                        boolean result = AuthUtils.addDeviceToUser(userAccount);
-                        if (result == CommonUtils.SUCCESS) {
-                            //返回登录
-                            setResult(Activity.RESULT_OK, mActivity.getIntent());
-                            mActivity.finish();
-                        } else {
-                            Toast.makeText(mActivity, "增添设备失败", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                t.start();
-            }
-        });
-        //不注册的话，该设备不能登录，直接退出
-        builder.setNegativeButton("取消", new OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                CommonUtils.exitBYOD(mActivity);
-            }
-        });
-        builder.show();
-    }
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -308,6 +269,7 @@ public class DeviceRegisterActivity extends Activity {
                 keyboard = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
             keyboard.showKeyboard();
+//            ((EditText)v).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
             return false;
         }
     };

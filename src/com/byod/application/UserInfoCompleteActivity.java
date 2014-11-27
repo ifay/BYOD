@@ -16,7 +16,7 @@ import com.byod.utils.CommonUtils;
 
 public class UserInfoCompleteActivity extends Activity {
 
-    private static final String TAG = "UserRegisterPage2";
+    private static final String TAG = "UserInfoCompleteActivity";
     private String url = CommonUtils.ONLINE_SERVER + "/UIA/user/edituser.jsp?UserID="; //TODO 如何绕过admin的鉴别？？
     private String userID;
     //http://localhost:8080/UIA/user/edituser.jsp?UserID=2328
