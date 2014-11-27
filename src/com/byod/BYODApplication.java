@@ -5,13 +5,8 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 
 import com.byod.bean.ContactBean;
-import com.byod.utils.CommonUtils;
 
 public class BYODApplication extends Application {
 

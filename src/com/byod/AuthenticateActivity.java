@@ -99,7 +99,8 @@ public class AuthenticateActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("AuthenticateActivity", "onCreate");
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         setContentView(R.layout.authenticate);
         this.mActivity = this;
         commit = (Button) findViewById(R.id.commit);
@@ -117,12 +118,12 @@ public class AuthenticateActivity extends Activity {
         public boolean onTouch(View v, MotionEvent event) {
             int inputType = ((EditText) v).getInputType();
             ((EditText) v).setInputType(InputType.TYPE_NULL);
+
             if (keyboardUtil == null) {
                 keyboardUtil = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
             keyboardUtil.showKeyboard();
             ((EditText) v).setInputType(inputType);
-
             return false;
         }
     };

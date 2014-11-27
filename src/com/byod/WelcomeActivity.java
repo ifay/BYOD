@@ -181,7 +181,7 @@ public class WelcomeActivity extends Activity {
      */
     private boolean checkRegistered(){
         if (PolicyUtils.getLatestPolicyTime(ctx, 0L) == 0L) {
-            handler.sendEmptyMessage(MSG_DEV_NOT_REGISTERED);
+            handler.sendEmptyMessage(MSG_DEV_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
             return false;
         } else {
             handler.sendEmptyMessage(MSG_DEV_REGISTERED);

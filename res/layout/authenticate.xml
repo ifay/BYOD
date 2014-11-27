@@ -5,47 +5,27 @@
     android:layout_height="match_parent"
     tools:context=".AuthenticateActivity" >
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="61dp"
-        android:text="@string/account" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/textView2"
-        android:layout_marginTop="14dp"
-        android:text="@string/passwd" />
-
     <EditText
         android:id="@+id/account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView2"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_alignRight="@+id/passwd"
-        android:ems="10" >
-
-        <requestFocus />
-    </EditText>
+        android:layout_below="@+id/passwd"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="38dp"
+        android:ems="10"
+        android:hint="@string/account">
+        </EditText>
 
     <EditText
         android:id="@+id/passwd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView1"
-        android:layout_alignBottom="@+id/textView1"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="74dp"
         android:ems="10"
+        android:hint="@string/passwd"
         android:inputType="textPassword" />
-
 
     <android.inputmethodservice.KeyboardView
         android:id="@+id/keyboard_view"
@@ -68,5 +48,5 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:text="提交" />
-    
+
 </RelativeLayout>
