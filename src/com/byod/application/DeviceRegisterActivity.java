@@ -1,11 +1,6 @@
 package com.byod.application;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,15 +9,12 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byod.R;
 import com.byod.launcher.HomeScreen;
-import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
@@ -260,16 +252,13 @@ public class DeviceRegisterActivity extends Activity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(
-                    Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-//            imm.hideSoftInputFromWindow(mActivity.getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
-//            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+            int inputType = ((EditText)v).getInputType();
+            ((EditText)v).setInputType(InputType.TYPE_NULL);
             if (keyboard == null) {
                 keyboard = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
             keyboard.showKeyboard();
-//            ((EditText)v).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            ((EditText)v).setInputType(inputType);
             return false;
         }
     };
@@ -278,7 +267,6 @@ public class DeviceRegisterActivity extends Activity {
         userAccountET = (EditText) findViewById(R.id.userAccount);
         nextBt = (Button) findViewById(R.id.next);
         pwdET = (EditText) findViewById(R.id.pwd);
-        pwdET.setInputType(0);
         pwdET.setOnTouchListener(showKeyboard);
         nextBt.setOnClickListener(checkUserDeviceListener);
     }
