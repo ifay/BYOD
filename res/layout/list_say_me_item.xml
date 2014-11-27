@@ -18,7 +18,7 @@
         android:gravity="center_vertical"
         android:orientation="vertical" >
 
-        <com.byod.contacts.view.ui.CustomTextView
+        <com.byod.ui.CustomTextView
             android:id="@+id/messagedetail_row_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

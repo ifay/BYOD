@@ -13,7 +13,7 @@ import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import com.byod.contacts.activities.PeopleActivity;
-import com.byod.contacts.service.T9Service;
+import com.byod.dial.service.T9Service;
 import com.byod.dial.activities.DialActivity;
 import com.byod.sms.activities.SMSActivity;
 

@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.byod.contacts.bean.ContactBean;
+import com.byod.bean.ContactBean;
 import com.byod.utils.CommonUtils;
 
 import java.util.List;

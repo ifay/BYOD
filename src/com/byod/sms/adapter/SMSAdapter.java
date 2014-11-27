@@ -8,7 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.byod.R;
-import com.byod.contacts.bean.SMSBean;
+import com.byod.bean.SMSBean;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

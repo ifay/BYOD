@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.byod.R;
-import com.byod.contacts.bean.CallLogBean;
+import com.byod.bean.CallLogBean;
 
 import java.util.List;
 
