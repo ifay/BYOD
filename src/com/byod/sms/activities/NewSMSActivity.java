@@ -166,7 +166,6 @@ public class NewSMSActivity extends Activity {
 
 
     private void query()
-
     {
         Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // 联系人的Uri
         String[] projection = {
