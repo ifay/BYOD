@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.byod.BYODApplication;
 import com.byod.R;
 import com.byod.launcher.HomeScreen;
 import com.byod.utils.CommonUtils;
@@ -37,7 +38,6 @@ public class DeviceRegisterActivity extends Activity {
     private static final int MSG_FIRST_DEVICE = 1000;   // 用户名下没有设备，进行用户注册
     private static final int MSG_NOT_FIRST_DEVICE = 1001;
     //增添设备，需要由其他已注册的设备确认。其他设备每次认证通过进入HomeScreen的时候去服务器查询下是否有需要处理的设备
-    private static final int MSG_SYNC_POLICY = 2000;
     private static final int MSG_SYNC_POLICY_SUCCESS = 2001;
     private static final int MSG_SYNC_POLICY_FAIL = 2002;
     private static final int MSG_POLICY_PASS = 3000;
@@ -113,7 +113,7 @@ public class DeviceRegisterActivity extends Activity {
                     if (authFailCount >= 3) {
                         //server will Lock user TODO Server
                         Toast.makeText(mActivity, "登录错误次数超过3次，应用退出", Toast.LENGTH_LONG).show();
-                        CommonUtils.exitBYOD(mActivity);
+                        BYODApplication.getInstance().exit();
                     }
                 default:
                     break;
@@ -125,6 +125,7 @@ public class DeviceRegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
+        BYODApplication.getInstance().addActivity(this);
         setContentView(R.layout.device_register);
         mActivity = this;
         initView();
@@ -243,7 +244,7 @@ public class DeviceRegisterActivity extends Activity {
         public void onClick(View v) {
             //1.clear all Policy local
             PolicyUtils.deleteLocalPolicy(mActivity);
-            CommonUtils.exitBYOD(mActivity);
+            BYODApplication.getInstance().exit();
         }
     };
 
@@ -274,36 +275,7 @@ public class DeviceRegisterActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
+        BYODApplication.getInstance().removeActivity(this);
     }
     
     @Override

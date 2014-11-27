@@ -88,15 +88,15 @@ public class WelcomeActivity extends Activity {
                     welcomeResultBtn.setVisibility(View.VISIBLE);
                     welcomeResultBtn.setOnClickListener(register);
                     break;
-                case MSG_DEV_LOCK:
+                case MSG_DEV_NOT_LOCK:
                     checkDevLock.setText(R.string.checked);
+                    checkPolicySync();
+                    break;
+                case MSG_DEV_LOCK:
+                    checkDevLock.setText(R.string.check_failed);
                     welcomeResultBtn.setText("请联系管理员解锁并退出");
                     welcomeResultBtn.setVisibility(View.VISIBLE);
                     welcomeResultBtn.setOnClickListener(exit);
-                    break;
-                case MSG_DEV_NOT_LOCK:
-                    checkDevLock.setText(R.string.check_failed);
-                    checkPolicySync();
                     break;
                 case MSG_POLICY_SYNC_OK:
                     checkPolicySync.setText(R.string.checked);
@@ -150,7 +150,7 @@ public class WelcomeActivity extends Activity {
         
         @Override
         public void onClick(View v) {
-            CommonUtils.exitBYOD(ctx);
+            BYODApplication.getInstance().exit();
         }
     };
 
@@ -228,5 +228,11 @@ public class WelcomeActivity extends Activity {
             handler.sendEmptyMessage(MSG_POLICY_CHECK_FAILED);
         }
         return 0;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BYODApplication.getInstance().removeActivity(this);
     }
 }

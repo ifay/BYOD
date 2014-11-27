@@ -49,15 +49,7 @@ public class CommonUtils {
 
     private static String TAG = "CommonUtils";
 
-    //退出BYOD
-    public static void exitBYOD(Context context) {
-        Intent intent;
-        intent = new Intent(context.getPackageName() + "."
-                + CommonUtils.ExitListenerReceiver);
-        context.sendBroadcast(intent);
-    }
-
-    //卸载自身
+    //卸载自身 TODO 不能实现
     public static void uninstallBYOD(Context context) {
         Uri packageUri = Uri.parse("package:" + CommonUtils.PKG_NAME);
         Log.d(TAG, "uninstall" + packageUri.toString());

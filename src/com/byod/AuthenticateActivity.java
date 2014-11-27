@@ -28,8 +28,11 @@ import com.byod.utils.PolicyUtils;
 
 /**
  * @author ifay 认证界面 1.完成对用户的认证 2.检查设备合规性 3.提供随机键盘
+ * 1.检查设备合规性
+ * 2.对用户认证
+ * 3.随机软键盘
  */
-public class AuthenticateActivity extends BYODActivity {
+public class AuthenticateActivity extends Activity {
 
     private String TAG = "AuthenticateActivity";
 
@@ -44,12 +47,8 @@ public class AuthenticateActivity extends BYODActivity {
 
     private static final int MSG_COMPLIANCED = 1000;
     private static final int MSG_NOT_COMPLIANCED = 1001; // 合规性检测失败
-    private static final int MSG_NOT_ADMIN = 1002; // 未开启设备管理器
-    private static final int MSG_ADMINED = 1003;    //设备管理器已开启
     private static final int MSG_AUTH_SUCCESS = 2000;
     private static final int MSG_AUTH_FAILED = 2001; // 认证失败
-    private static final int MSG_AUTH_NOT_PAIRED = 2002; // 设备和用户不匹配
-    private static final int MSG_AUTH_NO_POLICY_RECORD = 3000;    //无策略记录，表示未登记设备
 
     private Handler handler = new Handler() {
         @Override
@@ -65,21 +64,11 @@ public class AuthenticateActivity extends BYODActivity {
                     Toast.makeText(mActivity, "设备不符合安全规定" + checkResult +
                             "，应用即将退出", Toast.LENGTH_LONG).show();
                     setResult(Activity.RESULT_CANCELED, intent);
-                    CommonUtils.exitBYOD(mActivity);
-                    break;
-                case MSG_ADMINED:
-                    //管理器已开启
-                    //TODO
-                    break;
-                case MSG_NOT_ADMIN:
-                    // 合规性检测失败,退出应用
-                    Toast.makeText(mActivity, "未开启设备管理器功能，应用即将退出", Toast.LENGTH_LONG).show();
-                    setResult(Activity.RESULT_CANCELED, intent);
-                    CommonUtils.exitBYOD(mActivity);
+                    BYODApplication.getInstance().exit();
                     break;
                 case MSG_COMPLIANCED:
                     // 合规性检测成功
-                    Log.d(TAG, "MSG_COMPLIANCED");
+                    commit.setEnabled(true);
                     break;
                 case MSG_AUTH_SUCCESS:
                     // 认证成功
@@ -101,22 +90,6 @@ public class AuthenticateActivity extends BYODActivity {
                     sAuthFailTime += 1;
                     popLockUserDialog();
                     break;
-                case MSG_AUTH_NO_POLICY_RECORD:
-                    //无策略记录，进入RegisterPage1
-                    Log.d(TAG, "MSG_AUTH_NO_POLICY_RECORD");
-                    i = new Intent(mActivity, DeviceRegisterActivity.class);
-                    startActivity(i);
-                    break;
-                case MSG_AUTH_NOT_PAIRED:
-                    //用户与设备不匹配
-                    Log.d(TAG,"MSG_AUTH_NOT_PAIRED");
-                    String userAccount = msg.getData().getString("userAccount");
-                    //用户和设备不匹配，非本人设备，要求用户退出
-                    Toast.makeText(mActivity, "此设备非" + userAccount + "所属\n" +
-                            "应用将退出...", Toast.LENGTH_LONG).show();
-                    CommonUtils.exitBYOD(mActivity);
-                    break;
-                   
                 default:
                     break;
             }
@@ -125,7 +98,7 @@ public class AuthenticateActivity extends BYODActivity {
     };
 
     @Override
-    public void onCreate() {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.d("AuthenticateActivity", "onCreate");
         setContentView(R.layout.authenticate);
         this.mActivity = this;
@@ -133,10 +106,11 @@ public class AuthenticateActivity extends BYODActivity {
         passwdView = (EditText) findViewById(R.id.passwd);
         accountView = (EditText) findViewById(R.id.account);
         passwdView.setOnTouchListener(onTouchListener);
-        commit.setOnClickListener(onClickChangedListener);
+        commit.setEnabled(false);
+        commit.setOnClickListener(register);
     }
 
-    // EditText
+    // 【密码框】EditText
     private OnTouchListener onTouchListener = new OnTouchListener() {
 
         @Override
@@ -149,32 +123,12 @@ public class AuthenticateActivity extends BYODActivity {
             keyboardUtil.showKeyboard();
             ((EditText) v).setInputType(inputType);
 
-            final String userAccount = accountView.getText().toString().trim();
-            final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
-
-            // 检查用户是否和设备绑定
-            Thread t = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    boolean paired = AuthUtils.isUserAndDeviceBinded(userAccount, deviceID);
-                    if (!paired) {
-                        Message msg = new Message();
-                        msg.what = MSG_AUTH_NOT_PAIRED;
-                        Bundle data = new Bundle();
-                        data.putString("userAccount", userAccount);
-                        msg.setData(data);
-                        handler.sendEmptyMessage(MSG_AUTH_NOT_PAIRED);
-                    }
-                }
-            });
-            t.start();
             return false;
         }
     };
 
-    // submit button
-    private OnClickListener onClickChangedListener = new OnClickListener() {
+    //【登录】 submit button
+    private OnClickListener register = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
@@ -187,20 +141,11 @@ public class AuthenticateActivity extends BYODActivity {
 
 
             //2. authenticate the user and device
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (AuthUtils.login(account, passwordCrypted, deviceID) == CommonUtils.SUCCESS) {
-                        handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
-                    } else {
-                        handler.sendEmptyMessage(MSG_AUTH_FAILED);
-                    }
-                }
-            });
-            t.start();
-            // send the device id and user id to server and authenticate
-            handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
-            // handler.sendEmptyMessage(MSG_AUTH_USER_FAILED);
+            if (AuthUtils.login(account, passwordCrypted, deviceID) == CommonUtils.SUCCESS) {
+                handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
+            } else {
+                handler.sendEmptyMessage(MSG_AUTH_FAILED);
+            }
         }
     };
 
@@ -210,7 +155,7 @@ public class AuthenticateActivity extends BYODActivity {
      * 登录次数超过允许值时，弹出提示窗口，确认后退出应用，服务器将锁定账户及设备
      */
     private void popLockUserDialog() {
-        Log.d("AuthenticateActivity", "popLockUserDialog");
+        Log.d(TAG, "popLockUserDialog");
 
         int maxAuthTime = PolicyUtils.getPolicyInt(mActivity, PolicyUtils.PREF_PWD_TIRAL_TIME, 4);
         if (sAuthFailTime > maxAuthTime) {
@@ -222,7 +167,7 @@ public class AuthenticateActivity extends BYODActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     setResult(Activity.RESULT_CANCELED, intent);
-                    CommonUtils.exitBYOD(mActivity);
+                    BYODApplication.getInstance().exit();
                 }
             });
             dialog.show();
@@ -231,24 +176,10 @@ public class AuthenticateActivity extends BYODActivity {
 
     @Override
     protected void onResume() {
-        Log.d("AuthenticateActivity", "onResume");
+        Log.d(TAG, "onResume");
         // auth 界面不再跳转
-        BYODApplication.loggedIn = true;
         super.onResume();
         intent = getIntent();
-
-        //0.检测是否开启Device admin
-        if (!PolicyUtils.isAdminActive(mActivity)) {
-            PolicyUtils.activateDeviceAdmin(mActivity);
-        } else {
-            handler.sendEmptyMessage(MSG_ADMINED);
-        }
-
-        //1.检查本地是否有策略记录，即设备是否已注册过
-        if (PolicyUtils.getLatestPolicyTime(mActivity, 0L) == 0L) {
-            handler.sendEmptyMessage(MSG_AUTH_NO_POLICY_RECORD);
-        }
-
 
         // 2. check the device compliance
         Thread t = new Thread(new Runnable() {
@@ -274,12 +205,15 @@ public class AuthenticateActivity extends BYODActivity {
 
     @Override
     public void onBackPressed() {
-        Log.d("AuthenticateActivity", "onBackPressed");
+        Log.d(TAG, "onBackPressed");
         // clear Keyboard first
         if (keyboardUtil != null && keyboardUtil.keyboardIsShown()) {
             Log.d(TAG , "hide keyboard");
             keyboardUtil.hideKeyboard();
+            keyboardUtil = null;
         }
         super.onBackPressed();
     }
+    
+    
 }

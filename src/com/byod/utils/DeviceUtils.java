@@ -78,7 +78,7 @@ public class DeviceUtils {
      * SHA1方法计算DeviceID
      */
     public String getsDeviceIdSHA1() {
-        if (sDeviceID.length() < 1) { 
+        if (sDeviceID == null || sDeviceID.length() < 1) { 
             String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
             sDeviceID = CommonUtils.cryptSH1(longID);
         }
