@@ -102,7 +102,7 @@
             android:launchMode="singleTask"
             android:process=":info"
             android:screenOrientation="portrait"
-            android:taskAffinity="com.byod.info" <!-- TODO check here -->
+            android:taskAffinity="com.byod.info" 
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <intent-filter>
