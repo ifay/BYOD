@@ -28,8 +28,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <permission android:name="android.permission.DELETE_PACKAGES" />
 
@@ -51,11 +51,10 @@
         android:theme="@style/AppTheme"
         android:windowSoftInputMode="adjustResize" >
 
-        <!-- 预检测界面 -->
-        <activity 
+        <!-- 欢迎界面预检测界面 -->
+        <activity
             android:name="com.byod.WelcomeActivity"
-            android:taskAffinity="com.byod.auth">
-            >
+            android:taskAffinity="com.byod.auth" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -66,7 +65,7 @@
             </intent-filter>
         </activity>
 
-        <!-- 认证界面：每次通过icon进入应用都需要认证 -->
+        <!-- 用户登录界面 -->
         <activity
             android:name="com.byod.AuthenticateActivity"
             android:excludeFromRecents="true"
@@ -74,7 +73,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="nosensor"
             android:taskAffinity="com.byod.auth" >
-            
         </activity>
 
         <!-- launcher界面 -->
@@ -82,16 +80,19 @@
             android:name="com.byod.launcher.HomeScreen"
             android:taskAffinity="com.byod.launcher" >
         </activity>
-        <!-- 欢迎界面 -->
+
+        <!-- 欢迎界面 测试界面 -->
         <activity android:name="com.byod.MainActivity" >
         </activity>
-        <!-- 注册页面 -->
-        <activity android:name="com.byod.application.DeviceRegisterActivity"
-            >
+        <!-- device 注册页面 -->
+        <activity android:name="com.byod.application.DeviceRegisterActivity" >
         </activity>
-        <!-- 注册页面 -->
+        <!-- complete user info 页面 -->
         <activity android:name="com.byod.application.UserRegisterPage2" >
         </activity>
+
+        <!-- approve peer device register -->
+        <activity android:name="com.byod.service.PeerDeviceApproveActivity"></activity>
 
         <!-- service monitor the top task activity -->
         <service android:name="com.byod.application.watcher.AppWatcherService" >
@@ -99,6 +100,43 @@
                 <action android:name="com.byod.action.START" />
             </intent-filter>
         </service>
+
+        <!-- 服务器轮询Service -->
+        <service android:name="com.byod.service.PollingService" >
+            <intent-filter>
+                <action android:name="com.byod.action.POLLING" />
+            </intent-filter>
+        </service>
+
+        <!-- boot receiver -->
+        <receiver android:name="com.byod.app.listener.BootReceiver" >
+            <intent-filter android:priority="2147483647" >
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+                <action android:name="android.intent.action.SIM_STATE_CHANGED" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.ANY_DATA_STATE" />
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+                <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.TIME_CHANGED" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.ACTION_MEDIA_EJECT" />
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
+                <action android:name="android.intent.action.MEDIA_REMOVED" />
+                <action android:name="android.intent.action.MEDIA_CHECKING" />
+                <action android:name="android.intent.action.MEDIA_EJECT" />
+                <action android:name="android.intent.action.ACTION_PACKAGE_ADDED" />
+                <action android:name="android.intent.action.SCREEN_ON" />
+                <action android:name="android.intent.action.SCREEN_OFF" />
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </receiver>
 
         <!-- device admin -->
         <receiver
@@ -113,6 +151,8 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
+        <!-- package change receiver -->
         <receiver android:name="com.byod.app.listener.PackageChangeReceiver" >
             <intent-filter android:priority="2147483647" >
                 <action android:name="android.intent.action.PACKAGE_ADDED" />

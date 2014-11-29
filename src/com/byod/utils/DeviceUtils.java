@@ -196,4 +196,39 @@ public class DeviceUtils {
     public boolean checkRegRequestApproved() {
         return CommonUtils.SUCCESS;
     }
+
+    /**
+     * 根据deviceID查询对应的userID下的 isActive为false的设备信息
+     * @param deviceID
+     * @return
+     */
+    public static String[] queryPeerDevices(String deviceID) {
+        // TODO query server use thread
+        //return null;
+        return new String[]{
+                "deviceID","deviceName"
+        };
+    }
+
+    /**
+     * 允许设备注册
+     * 将isActive置为true
+     * @param deviceID
+     */
+    public static boolean approveDevice(String deviceID) {
+        // TODO Auto-generated method stub
+        return CommonUtils.SUCCESS;
+        
+    }
+    
+    /**
+     * 不允许设备注册
+     * delete device 对应的userID字段
+     * @param deviceID
+     */
+    public static boolean disapproveDevice(String deviceID) {
+        // TODO
+        return CommonUtils.SUCCESS;
+        
+    }
 }

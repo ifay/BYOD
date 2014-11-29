@@ -17,12 +17,10 @@ import java.security.NoSuchAlgorithmException;
  */
 public class CommonUtils {
 
+
     public static String PKG_NAME = "com.byod";
 
     public static String ONLINE_SERVER = "http://192.168.0.106:8080";    //TODO
-
-    //退出系统receiver
-    public static String ExitListenerReceiver = "ExitListenerReceiver";
 
     //（设备）策略
     public static String POLICY_PREF_NAME = "policy";
@@ -46,6 +44,12 @@ public class CommonUtils {
     //通用code
     public static boolean SUCCESS = true;
     public static boolean FAIL = false;
+
+    //服务
+    public static String ACTION_START_SERVICE = "com.byod.action.START";
+    public static String ACTION_POLL_SERVICE = "com.byod.action.POLLING";
+    
+    public static final int POLL_PEER = 300;   //peer-seek interval, 5min 
 
     private static String TAG = "CommonUtils";
 

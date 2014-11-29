@@ -13,6 +13,8 @@
     <string name="admin_desc">需要允许设备管理器方可安全访问企业应用</string>
     <string name="next">下一步</string>
     <string name="fill_account">填写注册账户</string>
+    <string name="approve">允许</string>
+    <string name="disapprove">不允许</string>
     <!-- Policy -->
     <!--
     <string name="fill_account">填写注册账户</string>
