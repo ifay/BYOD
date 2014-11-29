@@ -12,6 +12,7 @@ import android.widget.GridView;
 
 import com.byod.PhoneTabHostAcitivity;
 import com.byod.R;
+import com.byod.info.InfoActivity;
 
 import java.util.ArrayList;
 
@@ -73,6 +74,8 @@ public class AppsGridFragment extends GridFragment implements LoaderManager.Load
                 } else if (resources.getString(R.string.smsActivityLabel).equals(app.getLabel())) {
                     intent = new Intent(context, PhoneTabHostAcitivity.class);
                     intent.putExtra(PhoneTabHostAcitivity.EXTRA_PAGE, 2);
+                } else if (resources.getString(R.string.infoActivityLabel).equals(app.getLabel())) {
+                    intent = new Intent(context, InfoActivity.class);
                 }
             } else {
                 intent = context.getPackageManager().getLaunchIntentForPackage(app.getApplicationPackageName());

@@ -18,7 +18,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.byod.application.DeviceRegisterActivity;
 import com.byod.launcher.HomeScreen;
 import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
@@ -69,20 +68,22 @@ public class AuthenticateActivity extends Activity {
                 case MSG_COMPLIANCED:
                     // 合规性检测成功
                     commit.setEnabled(true);
+                    commit.setOnClickListener(login);
                     break;
                 case MSG_AUTH_SUCCESS:
                     // 认证成功
                     Log.d(TAG, "MSG_AUTH_SUCCESS");
+                    BYODApplication.loggedIn = true;
                     intent = getIntent();
-                    if (intent.getPackage() == null) {
+//                    if (intent.getPackage() == null) {
                         i = new Intent(mActivity, HomeScreen.class);
                         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(i);
-                    } else {
-                        intent.putExtra("AuthResult", CommonUtils.SUCCESS);
-                        setResult(Activity.RESULT_OK, intent);
-                        mActivity.finish();
-                    }
+//                    } else {
+//                        intent.putExtra("AuthResult", CommonUtils.SUCCESS);
+//                        setResult(Activity.RESULT_OK, intent);
+//                        mActivity.finish();
+//                    }
                     break;
                 case MSG_AUTH_FAILED:
                     // 用户认证失败
@@ -108,7 +109,7 @@ public class AuthenticateActivity extends Activity {
         accountView = (EditText) findViewById(R.id.account);
         passwdView.setOnTouchListener(onTouchListener);
         commit.setEnabled(false);
-        commit.setOnClickListener(register);
+        commit.setOnClickListener(login);
     }
 
     // 【密码框】EditText
@@ -129,7 +130,7 @@ public class AuthenticateActivity extends Activity {
     };
 
     //【登录】 submit button
-    private OnClickListener register = new OnClickListener() {
+    private OnClickListener login = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
@@ -137,6 +138,11 @@ public class AuthenticateActivity extends Activity {
             //1. 对于password的字符进行加密运算
             final String password = passwdView.getText().toString().trim();
             final String account = accountView.getText().toString().trim();
+            //TODO 取消注释
+//            if (password.length() < 1 || account.length() < 1) {
+//                Toast.makeText(mActivity, "请输入用户名或密码", Toast.LENGTH_SHORT).show();
+//                return;
+//            }
             final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
             final String passwordCrypted = CommonUtils.cryptMD5(password);
 
@@ -189,7 +195,7 @@ public class AuthenticateActivity extends Activity {
             public void run() {
                 int rst = DeviceUtils.isDeviceComplianced(mActivity);
                 if (rst == PolicyUtils.CODE_COMPLIANCED) {
-                    //handler.sendEmptyMessage(MSG_COMPLIANCED);
+                    handler.sendEmptyMessage(MSG_COMPLIANCED);
                     //直接进行后续操作
                 } else {
                     Message msg = new Message();

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.stericson.RootTools.RootTools;
 
@@ -19,6 +20,8 @@ import com.stericson.RootTools.RootTools;
  *         判断是否root
  */
 public class DeviceUtils {
+
+    private static final String TAG = "DeviceUtils";
 
     private static String sDeviceID = null;
 
@@ -61,6 +64,7 @@ public class DeviceUtils {
             BLUETOOTH_MAC = bluetoothAdapter.getAddress();
         }
         sDeviceManufacturer = Build.MANUFACTURER.toLowerCase();
+        Log.d(TAG, "sDeviceManufacturer:"+sDeviceManufacturer);
     }
 
 

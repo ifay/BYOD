@@ -30,7 +30,7 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive intent "+intent.getAction());
         //start service if not first install BYOD
-        if (PolicyUtils.getLatestPolicyTime(context, 0L) != 0L) {
+        if (PolicyUtils.getLatestPolicyTime(context, 0L) == 0L) {////////TODO should be !=
             deviceID = DeviceUtils.getInstance(context).getsDeviceIdSHA1();
             //start polling service
             Intent i = new Intent(context,PollingService.class);

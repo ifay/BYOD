@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.byod.service;
+package com.byod;
 
 import android.app.Activity;
 import android.app.NotificationManager;

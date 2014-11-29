@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.byod.PeerDeviceApproveActivity;
 import com.byod.R;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
@@ -73,7 +74,7 @@ public class PollingService extends Service {
                 Intent.FLAG_ACTIVITY_NEW_TASK);
         mNotification
                 .setLatestEventInfo(this,
-                        getResources().getString(R.string.app_name), "有新设备申请注册!",
+                        getResources().getString(R.string.app_name), "检测到新设备注册申请!",
                         pendingIntent);
         mManager.notify(0, mNotification);
     }

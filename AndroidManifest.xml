@@ -92,7 +92,24 @@
         </activity>
 
         <!-- approve peer device register -->
-        <activity android:name="com.byod.service.PeerDeviceApproveActivity"></activity>
+        <activity android:name="com.byod.PeerDeviceApproveActivity"></activity>
+        
+        <!-- 信息上报系统 -->
+        <activity  android:name="com.byod.info.InfoActivity"
+            android:clearTaskOnLaunch="true"
+            android:icon="@drawable/app_info"
+            android:label="@string/infoActivityLabel"
+            android:launchMode="singleTask"
+            android:process=":info"
+            android:screenOrientation="portrait"
+            android:taskAffinity="com.byod.info" <!-- TODO check here -->
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <!-- service monitor the top task activity -->
         <service android:name="com.byod.application.watcher.AppWatcherService" >
