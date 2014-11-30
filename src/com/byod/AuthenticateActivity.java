@@ -146,9 +146,9 @@ public class AuthenticateActivity extends Activity {
             final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
             final String passwordCrypted = CommonUtils.cryptMD5(password);
 
-
             //2. authenticate the user and device
             if (AuthUtils.login(account, passwordCrypted, deviceID) == CommonUtils.SUCCESS) {
+                CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, account);
                 handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
             } else {
                 handler.sendEmptyMessage(MSG_AUTH_FAILED);

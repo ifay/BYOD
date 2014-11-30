@@ -230,6 +230,7 @@ public class DeviceRegisterActivity extends Activity {
         public void onClick(View v) {
             boolean rst = DeviceUtils.getInstance(mActivity).registerDevice();
             if (rst == CommonUtils.SUCCESS) {
+                CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, userAccount);
                 Intent i = new Intent(mActivity, HomeScreen.class);
                 i.putExtra("isLoggedIn", true);
                 startActivity(i);
@@ -237,7 +238,7 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    //【注册失败，点击退出】清除所有local数据，退出应用
+    //【注册失败，点击退出】清除所有local数据，退出应用z
     View.OnClickListener exit = new View.OnClickListener() {
         
         @Override

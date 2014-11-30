@@ -11,6 +11,7 @@ import com.byod.bean.ContactBean;
 public class BYODApplication extends Application {
 
     private static BYODApplication sInstance;
+    public static String userAccount;
     public static boolean loggedIn = false;
     public static int REQUEST_AUTH_CODE = 1;
     private List<ContactBean> contactBeanList;
@@ -43,9 +44,6 @@ public class BYODApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
-        //******TODO *********
-        //Notification
-        //http://www.oschina.net/question/234345_40111
     }
 
 

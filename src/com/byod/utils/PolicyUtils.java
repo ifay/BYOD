@@ -62,14 +62,7 @@ public class PolicyUtils {
 
     private static DevicePolicyManager dpManager;
     private static ComponentName byodAdmin;
-    private static SharedPreferences sPrefs;
 
-    static SharedPreferences initSharedPreferences(Context ctx) {
-        if (sPrefs == null) {
-            sPrefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
-        }
-        return sPrefs;
-    }
 
     //device admin check
     public static boolean isAdminActive(Context context) {
@@ -126,28 +119,27 @@ public class PolicyUtils {
     }
 
     public static int getPolicyInt(Context cxt, String key, int defValue) {
-        SharedPreferences prefs = initSharedPreferences(cxt);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getInt(key, defValue);
     }
 
     public static String getPolicyString(Context cxt, String key, String defValue) {
-        SharedPreferences prefs = initSharedPreferences(cxt);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getString(key, defValue);
     }
 
     public static boolean getPolicyBool(Context cxt, String key, boolean defValue) {
-        SharedPreferences prefs = initSharedPreferences(cxt);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getBoolean(key, defValue);
     }
 
     public static Long getPolicyLong(Context cxt, String key, Long defValue) {
-        SharedPreferences prefs = initSharedPreferences(cxt);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getLong(key, defValue);
     }
 
     public static Long getLatestPolicyTime(Context cxt, Long defValue) {
-        SharedPreferences prefs = initSharedPreferences(cxt);
-        Log.d("null pointer", prefs == null ? "null" : "not null");
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getLong(PREF_DEVICE_POLICY_TIME, defValue);
     }
 
@@ -155,7 +147,7 @@ public class PolicyUtils {
      * delete all local policy data
      */
     public static void deleteLocalPolicy(Context ctx) {
-        SharedPreferences prefs = initSharedPreferences(ctx);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(ctx);
         prefs.edit().clear().commit();
     }
 

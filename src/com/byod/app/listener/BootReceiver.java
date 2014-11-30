@@ -20,6 +20,7 @@ import com.byod.utils.PollingUtils;
  */
 public class BootReceiver extends BroadcastReceiver {
     private String deviceID = null;
+    private static Intent pollingIntent;
 
     private static final String TAG = "BootReceiver";
     /* (non-Javadoc)
@@ -33,10 +34,12 @@ public class BootReceiver extends BroadcastReceiver {
         if (PolicyUtils.getLatestPolicyTime(context, 0L) == 0L) {////////TODO should be !=
             deviceID = DeviceUtils.getInstance(context).getsDeviceIdSHA1();
             //start polling service
-            Intent i = new Intent(context,PollingService.class);
-            i.setAction(CommonUtils.ACTION_POLL_SERVICE);
-            i.putExtra("DeviceID", deviceID);
-            PollingUtils.startPollingService(context, CommonUtils.POLL_PEER, i);
+            if (pollingIntent == null) {
+                pollingIntent = new Intent(context,PollingService.class);
+                pollingIntent.setAction(CommonUtils.ACTION_POLL_SERVICE);
+                pollingIntent.putExtra("DeviceID", deviceID);
+            }
+            PollingUtils.startPollingService(context, CommonUtils.POLL_PEER, pollingIntent);
         }
         //TODO start msg & phone listener
     }

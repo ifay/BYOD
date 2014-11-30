@@ -83,7 +83,14 @@ public class DeviceUtils {
      */
     public String getsDeviceIdSHA1() {
         if (sDeviceID == null || sDeviceID.length() < 1) { 
+            Log.d(TAG,"IMEI"+IMEI);
+            Log.d(TAG,"IMSI"+IMSI);
+            Log.d(TAG,"TEL"+TEL);
+            Log.d(TAG,"WLAN_MAC"+WLAN_MAC);
+            Log.d(TAG,"BLUETOOTH_MAC"+BLUETOOTH_MAC);
             String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+            longID.replaceAll(":", "");
+            Log.d(TAG,"longID"+longID);
             sDeviceID = CommonUtils.cryptSH1(longID);
         }
         return sDeviceID;
@@ -124,7 +131,7 @@ public class DeviceUtils {
     public static int isDeviceComplianced(Context context) {
         //1.sync the newest policy
         PolicyUtils.getNewestPolicy();
-        SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(context);
 
         //将设备信息发送至服务器，由服务器进行检测。
 
