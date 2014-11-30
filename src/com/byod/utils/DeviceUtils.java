@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.stericson.RootTools.RootTools;
 
@@ -19,6 +20,8 @@ import com.stericson.RootTools.RootTools;
  *         判断是否root
  */
 public class DeviceUtils {
+
+    private static final String TAG = "DeviceUtils";
 
     private static String sDeviceID = null;
 
@@ -61,6 +64,7 @@ public class DeviceUtils {
             BLUETOOTH_MAC = bluetoothAdapter.getAddress();
         }
         sDeviceManufacturer = Build.MANUFACTURER.toLowerCase();
+        Log.d(TAG, "sDeviceManufacturer:"+sDeviceManufacturer);
     }
 
 
@@ -78,8 +82,15 @@ public class DeviceUtils {
      * SHA1方法计算DeviceID
      */
     public String getsDeviceIdSHA1() {
-        if (sDeviceID.length() < 1) { 
+        if (sDeviceID == null || sDeviceID.length() < 1) { 
+            Log.d(TAG,"IMEI"+IMEI);
+            Log.d(TAG,"IMSI"+IMSI);
+            Log.d(TAG,"TEL"+TEL);
+            Log.d(TAG,"WLAN_MAC"+WLAN_MAC);
+            Log.d(TAG,"BLUETOOTH_MAC"+BLUETOOTH_MAC);
             String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+            longID.replaceAll(":", "");
+            Log.d(TAG,"longID"+longID);
             sDeviceID = CommonUtils.cryptSH1(longID);
         }
         return sDeviceID;
@@ -120,7 +131,7 @@ public class DeviceUtils {
     public static int isDeviceComplianced(Context context) {
         //1.sync the newest policy
         PolicyUtils.getNewestPolicy();
-        SharedPreferences prefs = PolicyUtils.initSharedPreferences(context);
+        SharedPreferences prefs = CommonUtils.initSharedPreferences(context);
 
         //将设备信息发送至服务器，由服务器进行检测。
 
@@ -195,5 +206,40 @@ public class DeviceUtils {
      */
     public boolean checkRegRequestApproved() {
         return CommonUtils.SUCCESS;
+    }
+
+    /**
+     * 根据deviceID查询对应的userID下的 isActive为false的设备信息
+     * @param deviceID
+     * @return
+     */
+    public static String[] queryPeerDevices(String deviceID) {
+        // TODO query server use thread
+        //return null;
+        return new String[]{
+                "deviceID","deviceName"
+        };
+    }
+
+    /**
+     * 允许设备注册
+     * 将isActive置为true
+     * @param deviceID
+     */
+    public static boolean approveDevice(String deviceID) {
+        // TODO Auto-generated method stub
+        return CommonUtils.SUCCESS;
+        
+    }
+    
+    /**
+     * 不允许设备注册
+     * delete device 对应的userID字段
+     * @param deviceID
+     */
+    public static boolean disapproveDevice(String deviceID) {
+        // TODO
+        return CommonUtils.SUCCESS;
+        
     }
 }

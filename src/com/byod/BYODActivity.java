@@ -27,10 +27,17 @@ public abstract class BYODActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        BYODApplication.getInstance().addActivity(this);
         if (!BYODApplication.loggedIn) {
             Intent intent = new Intent(this, AuthenticateActivity.class);
             startActivityForResult(intent, REQUEST_AUTH_CODE);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BYODApplication.getInstance().removeActivity(this);
     }
 
     @Override

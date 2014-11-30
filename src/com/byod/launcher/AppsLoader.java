@@ -35,25 +35,21 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
 
 
         // retrieve the list of installed applications
-        List<ApplicationInfo> apps = mPm.getInstalledApplications(0);
-
-        if (apps == null) {
-            apps = new ArrayList<ApplicationInfo>();
-        }
+        List<ApplicationInfo> apps = new ArrayList<ApplicationInfo>();
 
         final Context context = getContext();
 
         // create corresponding apps and load their labels
         ArrayList<AppModel> items = new ArrayList<AppModel>(apps.size());
-        for (int i = 0; i < apps.size(); i++) {
-            String pkg = apps.get(i).packageName;
-
-            // only apps which are launchable
-            if (context.getPackageManager().getLaunchIntentForPackage(pkg) != null) {
-                AppModel app = new AppModel(context, apps.get(i));
-                items.add(app);
-            }
-        }
+//        for (int i = 0; i < apps.size(); i++) {
+//            String pkg = apps.get(i).packageName;
+//
+//            // only apps which are launchable
+//            if (context.getPackageManager().getLaunchIntentForPackage(pkg) != null) {
+//                AppModel app = new AppModel(context, apps.get(i));
+//                items.add(app);
+//            }
+//        }
 
         // 增加应用内 通讯录，拨号，短信 信息
         items.add(new AppModel(context, context.getResources().getString(R.string.contactsActivityLabel),
@@ -62,7 +58,8 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppModel>> {
                 context.getResources().getDrawable(R.drawable.ic_dial)));
         items.add(new AppModel(context, context.getResources().getString(R.string.smsActivityLabel),
                 context.getResources().getDrawable(R.drawable.ic_sms)));
-
+        items.add(new AppModel(context, context.getResources().getString(R.string.infoActivityLabel),
+                context.getResources().getDrawable(R.drawable.app_info)));
         // sort the list
         Collections.sort(items, ALPHA_COMPARATOR);
         return items;

@@ -1,11 +1,6 @@
 package com.byod.application;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,15 +9,13 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.byod.BYODApplication;
 import com.byod.R;
 import com.byod.launcher.HomeScreen;
-import com.byod.utils.AuthUtils;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
@@ -45,7 +38,6 @@ public class DeviceRegisterActivity extends Activity {
     private static final int MSG_FIRST_DEVICE = 1000;   // 用户名下没有设备，进行用户注册
     private static final int MSG_NOT_FIRST_DEVICE = 1001;
     //增添设备，需要由其他已注册的设备确认。其他设备每次认证通过进入HomeScreen的时候去服务器查询下是否有需要处理的设备
-    private static final int MSG_SYNC_POLICY = 2000;
     private static final int MSG_SYNC_POLICY_SUCCESS = 2001;
     private static final int MSG_SYNC_POLICY_FAIL = 2002;
     private static final int MSG_POLICY_PASS = 3000;
@@ -121,7 +113,7 @@ public class DeviceRegisterActivity extends Activity {
                     if (authFailCount >= 3) {
                         //server will Lock user TODO Server
                         Toast.makeText(mActivity, "登录错误次数超过3次，应用退出", Toast.LENGTH_LONG).show();
-                        CommonUtils.exitBYOD(mActivity);
+                        BYODApplication.getInstance().exit();
                     }
                 default:
                     break;
@@ -129,49 +121,11 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    private void addNewDeviceDialog() {
-        AlertDialog.Builder builder = new Builder(mActivity);
-        builder.setTitle("新增设备");
-        builder.setMessage("是否添加此设备为您名下的使用设备？");
-        builder.setPositiveButton("添加", new OnClickListener() {
-            Intent intent;
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Thread t = new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        //注册设备
-                        boolean result = AuthUtils.addDeviceToUser(userAccount);
-                        if (result == CommonUtils.SUCCESS) {
-                            //返回登录
-                            setResult(Activity.RESULT_OK, mActivity.getIntent());
-                            mActivity.finish();
-                        } else {
-                            Toast.makeText(mActivity, "增添设备失败", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                t.start();
-            }
-        });
-        //不注册的话，该设备不能登录，直接退出
-        builder.setNegativeButton("取消", new OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                CommonUtils.exitBYOD(mActivity);
-            }
-        });
-        builder.show();
-    }
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
+        BYODApplication.getInstance().addActivity(this);
         setContentView(R.layout.device_register);
         mActivity = this;
         initView();
@@ -276,6 +230,7 @@ public class DeviceRegisterActivity extends Activity {
         public void onClick(View v) {
             boolean rst = DeviceUtils.getInstance(mActivity).registerDevice();
             if (rst == CommonUtils.SUCCESS) {
+                CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, userAccount);
                 Intent i = new Intent(mActivity, HomeScreen.class);
                 i.putExtra("isLoggedIn", true);
                 startActivity(i);
@@ -283,14 +238,14 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    //【注册失败，点击退出】清除所有local数据，退出应用
+    //【注册失败，点击退出】清除所有local数据，退出应用z
     View.OnClickListener exit = new View.OnClickListener() {
         
         @Override
         public void onClick(View v) {
             //1.clear all Policy local
             PolicyUtils.deleteLocalPolicy(mActivity);
-            CommonUtils.exitBYOD(mActivity);
+            BYODApplication.getInstance().exit();
         }
     };
 
@@ -299,15 +254,13 @@ public class DeviceRegisterActivity extends Activity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(
-                    Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-//            imm.hideSoftInputFromWindow(mActivity.getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
-//            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+            int inputType = ((EditText)v).getInputType();
+            ((EditText)v).setInputType(InputType.TYPE_NULL);
             if (keyboard == null) {
                 keyboard = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
             keyboard.showKeyboard();
+            ((EditText)v).setInputType(inputType);
             return false;
         }
     };
@@ -316,7 +269,6 @@ public class DeviceRegisterActivity extends Activity {
         userAccountET = (EditText) findViewById(R.id.userAccount);
         nextBt = (Button) findViewById(R.id.next);
         pwdET = (EditText) findViewById(R.id.pwd);
-        pwdET.setInputType(0);
         pwdET.setOnTouchListener(showKeyboard);
         nextBt.setOnClickListener(checkUserDeviceListener);
     }
@@ -324,36 +276,7 @@ public class DeviceRegisterActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
+        BYODApplication.getInstance().removeActivity(this);
     }
     
     @Override
