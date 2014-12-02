@@ -3,11 +3,6 @@
  */
 package com.byod;
 
-import com.byod.application.DeviceRegisterActivity;
-import com.byod.utils.CommonUtils;
-import com.byod.utils.DeviceUtils;
-import com.byod.utils.PolicyUtils;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +13,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.byod.application.DeviceRegisterActivity;
+import com.byod.utils.CommonUtils;
+import com.byod.utils.DeviceUtils;
+import com.byod.utils.PolicyUtils;
 
 /**
  * @author ifay
@@ -195,7 +195,7 @@ public class WelcomeActivity extends Activity {
     private boolean checkDeviceLocked(){
         boolean isLocked = DeviceUtils.getInstance(ctx).isDeviceLocked();
         if (isLocked == false) {
-            handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);
+            handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);///////MSG_DEV_LOCK
             return false;
         } else {
             handler.sendEmptyMessage(MSG_DEV_LOCK);
