@@ -34,13 +34,16 @@ public class PeerDeviceApproveActivity extends Activity {
         public void onClick(View v) {
             if (v.equals((Button)approveButton)) {
                 //TODO send approve command to server
-                DeviceUtils.approveDevice(deviceInfo[0]);
+                try {
+                    DeviceUtils.approveDevice(deviceInfo[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 //change the deviceIsActive to true
-                mActivity.finish();
             } else if (v.equals((Button)disApproveButton)) {
                 //TODO send command to server, delete record
-                mActivity.finish();
             }
+            mActivity.finish();
         }
     };
 

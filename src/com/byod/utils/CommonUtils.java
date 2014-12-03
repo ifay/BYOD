@@ -71,9 +71,45 @@ public class CommonUtils {
         edit.commit();
     }
 
+    public static void setPrefLong(Context context, String key, Long value) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        Editor edit = prefs.edit();
+        edit.putLong(key, value);
+        edit.commit();
+    }
+
+    public static void setPrefBoolean(Context context, String key, boolean value) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        Editor edit = prefs.edit();
+        edit.putBoolean(key, value);
+        edit.commit();
+    }
+
+    public static void setPrefInt(Context context, String key, int value) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        Editor edit = prefs.edit();
+        edit.putInt(key, value);
+        edit.commit();
+    }
+
     public static String getPrefString(Context context, String key, String defValue) {
         SharedPreferences prefs = initSharedPreferences(context);
         return prefs.getString(key, defValue);
+    }
+    
+    public static Boolean getPrefBoolean(Context context, String key, Boolean defValue) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        return prefs.getBoolean(key, defValue);
+    }
+    
+    public static Long getPrefLong(Context context, String key, Long defValue) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        return prefs.getLong(key, defValue);
+    }
+    
+    public static int getPrefInt(Context context, String key, int defValue) {
+        SharedPreferences prefs = initSharedPreferences(context);
+        return prefs.getInt(key, defValue);
     }
 
     // 卸载自身 TODO 不能实现
@@ -126,5 +162,7 @@ public class CommonUtils {
         }
         return strb.toString();
     }
+
+
 
 }

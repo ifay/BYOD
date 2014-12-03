@@ -41,6 +41,7 @@ public class WelcomeActivity extends Activity {
     private static final int MSG_POLICY_SYNC_FAILED = 4001;
     private static final int MSG_POLICY_CHECKED = 5000;
     private static final int MSG_POLICY_CHECK_FAILED = 5001;
+    private static final String POLICY_FAIL_REASON = "policy_fail_reason";
 
     private Context ctx;
     private static String TAG = "WelcomeActivity";
@@ -193,41 +194,55 @@ public class WelcomeActivity extends Activity {
      * check device locked
      */
     private boolean checkDeviceLocked(){
-        boolean isLocked = DeviceUtils.getInstance(ctx).isDeviceLocked();
-        if (isLocked == false) {
-            handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);///////MSG_DEV_LOCK
-            return false;
-        } else {
-            handler.sendEmptyMessage(MSG_DEV_LOCK);
-            return true;
+        boolean isLocked = true;
+        try {
+            isLocked = DeviceUtils.getInstance(ctx).isDeviceLocked();
+            if (isLocked == false) {
+                handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);///////MSG_DEV_LOCK
+            } else {
+                handler.sendEmptyMessage(MSG_DEV_LOCK);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            handler.sendEmptyMessage(MSG_DEV_REGISTERED);
         }
+        return isLocked;
     }
 
     /**
      * sync the latest policy
      */
-    private boolean checkPolicySync() {
-        boolean ret = PolicyUtils.getNewestPolicy();
-        if (ret == CommonUtils.SUCCESS) {
-            handler.sendEmptyMessage(MSG_POLICY_SYNC_OK);
-        } else {
+    private void checkPolicySync() {
+        try {
+            PolicyUtils.getDevicePolicy(ctx, DeviceUtils.getInstance(ctx).getsDeviceIdSHA1());
+                handler.sendEmptyMessage(MSG_POLICY_SYNC_OK);
+        } catch (Exception e) {
             handler.sendEmptyMessage(MSG_POLICY_SYNC_FAILED);
+            e.printStackTrace();
         }
-        return ret;
     }
     
     /**
      * 执行设备策略检查 
      * @return Policy Code
      */
-    private int checkPolicyResult() {
-        int policyCode = DeviceUtils.isDeviceComplianced(ctx);;
-        if(policyCode == 0) {
-            handler.sendEmptyMessage(MSG_POLICY_CHECKED);
-        } else {
-            handler.sendEmptyMessage(MSG_POLICY_CHECK_FAILED);
-        }
-        return 0;
+    private void checkPolicyResult() {
+        String policyCode;
+        try {
+            policyCode = DeviceUtils.isDeviceComplianced(ctx);
+            if(policyCode == null) {
+                handler.sendEmptyMessage(MSG_POLICY_CHECKED);
+            } else {
+                Message msg = new Message();
+                msg.what = MSG_POLICY_CHECK_FAILED;
+                Bundle data = new Bundle();
+                data.putString(POLICY_FAIL_REASON, policyCode);
+                msg.setData(data);
+                handler.sendEmptyMessage(MSG_POLICY_CHECK_FAILED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        };
     }
 
     @Override

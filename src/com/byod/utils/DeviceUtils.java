@@ -1,15 +1,21 @@
 package com.byod.utils;
 
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.json.JSONException;
+import org.json.JSONStringer;
 import org.ksoap2.serialization.PropertyInfo;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
@@ -30,7 +36,7 @@ public class DeviceUtils {
 
     private static final String TAG = "DeviceUtils";
 
-    private ExecutorService pool = Executors.newCachedThreadPool();
+    private static ExecutorService pool = Executors.newCachedThreadPool();
     
     private static String sDeviceID = null;
 
@@ -135,28 +141,41 @@ public class DeviceUtils {
      * 将设备信息发送至服务器，由服务器进行检测
      *
      * @param context
-     * @return 0-通过。正数-某条策略未通过
+     * @return null通过。"字符串"-未通过某条策略
+     * @throws Exception 
      */
-    public static int isDeviceComplianced(Context context) {
-        //1.sync the newest policy
-        PolicyUtils.getNewestPolicy();
-        SharedPreferences prefs = CommonUtils.initSharedPreferences(context);
-
-        //将设备信息发送至服务器，由服务器进行检测。
-
-        return 0;
-
+    public static String isDeviceComplianced(Context context) throws Exception {
+        return PolicyUtils.checkPolicy(context);
     }
 
     /**
      * 向服务器查询用户所有设备数目 
-     * TODO 线程处理  
      * @param userAccount 用户账户唯一标识，此处用邮箱
      * @return 用户所绑定的设备数目. -1表示密码错误
+     * @throws Exception 
      */
-    public static int getUserDeviceNum(String userAccount, String userPwd) {
-        //TODO
-        return 0;
+    public static int getUserDeviceNum(String userAccount, String userPwd) throws Exception {
+        PropertyInfo[] property = new PropertyInfo[2];
+        property[0].setName("userAccount");
+        property[0].setValue(userAccount);
+        property[0].setType(PropertyInfo.STRING_CLASS);
+        property[1].setName("pwd");
+        property[1].setValue(userPwd);
+        property[1].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "getUserDeviceNum", property);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        } 
+        Future<String> future = pool.submit(task);
+        String result;
+        try {
+            result = future.get();
+            return Integer.parseInt(result);
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
     }
 
     /**
@@ -171,15 +190,17 @@ public class DeviceUtils {
     /**
      * 检测是否锁定
      * @return false:not locked; true:locked
+     * @throws InterruptedException 
+     * @throws ExecutionException 
      */
-    public boolean isDeviceLocked() {
+    public boolean isDeviceLocked() throws Exception {
         if (sDeviceID == null || sDeviceID.length() < 1) {
             getsDeviceIdSHA1();
         }
-        PropertyInfo propertyInfo = new PropertyInfo();
-        propertyInfo.setName("deviceID");
-        propertyInfo.setValue(sDeviceID);
-        propertyInfo.setType(PropertyInfo.STRING_CLASS);
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
                 CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);
         if (pool == null) {
@@ -190,59 +211,149 @@ public class DeviceUtils {
             String result = future.get();
             return result.equals("true");
         } catch (InterruptedException e) {
-            e.printStackTrace();
-            return true;
+            throw e;
         } catch (ExecutionException e) {
-            e.printStackTrace();
-            return true;
+            throw e;
         }
     }
 
     /**
-     * TODO 线程处理
-     * 新设备注册前需要由其他已注册的设备同意，注册参数：生产商，设备ID
+     * 新设备注册前需要由其他已注册的设备同意
+     * 在registerDevice（context,false）的时候就已经完成
      */
     public boolean sendRegReqToPeerDevice() {
-        //send only device os, version to server
-        //sDeviceManufacturer
-        //sDeviceID
         return CommonUtils.SUCCESS;
     }
     
     /**
-     * TODO 想服务器查询设备注册请求是否已被批准 线程处理
+     * 向服务器查询设备注册请求是否已被批准
      * @return
+     * @throws Exception 
      */
-    public boolean isRegReqApproved() {
+    public boolean isRegReqApproved() throws Exception {
         //send req to server, select by deviceiD
-        return true;
+        String deviceID = getsDeviceIdSHA1();
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceID");////////TODO 用JSON格式
+        propertyInfo[0].setValue(deviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceActive", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
     }
     
+    private JSONStringer generateDeviceJSON (Context context, boolean isFirst) {
+        LocationUtils location = new LocationUtils(context);
+        JSONStringer deviceJson = new JSONStringer();
+        try {
+            deviceJson.object();
+            deviceJson.key("deviceID");
+            deviceJson.value(sDeviceID);
+            deviceJson.key("userAccount");
+            deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
+            deviceJson.key("deviceName");
+            deviceJson.value(sDeviceManufacturer);
+            deviceJson.key("deviceOS");
+            deviceJson.value(2000);//Android
+            deviceJson.key("deviceMAC");
+            deviceJson.value(WLAN_MAC);
+            deviceJson.key("devicePhoneNum");
+            deviceJson.value(TEL);
+            deviceJson.key("deviceIsLock");
+            deviceJson.value(0);
+            deviceJson.key("deviceIsDel");
+            deviceJson.value(0);
+            deviceJson.key("deviceInitTime");
+            deviceJson.value(new Date(System.currentTimeMillis())); //TODO 日期格式 long型
+            deviceJson.key("deviceValidPeriod");
+            deviceJson.value(365);////TODO 暂定365天有效。服务器需要支持修改
+            deviceJson.key("deviceIsIllegal");
+            deviceJson.value(0);
+            deviceJson.key("deviceIsActive");
+            deviceJson.value(isFirst? 1: 0);
+            deviceJson.key("deviceIsLogout");
+            deviceJson.value(0);
+            deviceJson.key("deviceEaster");
+            deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
+            deviceJson.key("bakStr1");
+            deviceJson.value(location.getLocation());//TODO 目前是经度+空格+纬度
+            deviceJson.endObject();
+            Log.d(TAG,deviceJson.toString());
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return deviceJson;
+    }
     /**
-     * 注册设备 TODO 线程处理
+     * 注册设备 , 同时发送Register request
      * @return
+     * @throws Exception 
      */
-    public boolean registerDevice() {
+    public boolean registerDevice(Context context, boolean isFirst) throws Exception {
         //send device info to the server
-        return CommonUtils.SUCCESS;
+        String deviceJson = generateDeviceJSON(context,isFirst).toString();
+        if (deviceJson.length() == 0) { //Device info generate fail
+            return CommonUtils.FAIL;
+        }
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceJSON");////////TODO 用JSON格式
+        propertyInfo[0].setValue(deviceJson);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
     }
     
     /**
-     * 向服务器查询注册请求是否通过 TODO 线程处理
-     * @return
-     */
-    public boolean checkRegRequestApproved() {
-        return CommonUtils.SUCCESS;
-    }
-
-    /**
+     * TODO
      * 根据deviceID查询对应的userID下的 isActive为false的设备信息
      * @param deviceID
      * @return
+     * @throws Exception 
      */
-    public static String[] queryPeerDevices(String deviceID) {
+    public static String[] queryPeerDevices(String deviceID) throws Exception {
         // TODO query server use thread
-        //return null;
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);/////method change TODO
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+//            return result;
+            //TODO 如何返回 设备信息呢？ 用JSON？///////////
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
         return new String[]{
                 "deviceID","deviceName"
         };
@@ -252,11 +363,55 @@ public class DeviceUtils {
      * 允许设备注册
      * 将isActive置为true
      * @param deviceID
+     * @throws Exception 
      */
-    public static boolean approveDevice(String deviceID) {
-        // TODO Auto-generated method stub
-        return CommonUtils.SUCCESS;
+    public static boolean approveDevice(String deviceID) throws Exception {
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "setDeviceActive", propertyInfo);/////method change TODO
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
         
+    }
+
+    /**
+     * 查询设备注册是否被批准
+     * @return 
+     * @throws Exception
+     */
+    public boolean checkRegRequestApproved() throws Exception {
+        String deviceID = getsDeviceIdSHA1();
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceActive", propertyInfo);/////method change TODO
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
     }
     
     /**
@@ -265,10 +420,32 @@ public class DeviceUtils {
      * @param deviceID
      */
     public static boolean disapproveDevice(String deviceID) {
-        // TODO
+        // TODO do nothing? or setDeviceIsDeleted?
         return CommonUtils.SUCCESS;
         
     }
+
+    public static int getAPIVersion() {
+        Log.d(TAG,"API version:"+Build.VERSION.SDK_INT);
+        return Build.VERSION.SDK_INT;
+    }
+
+    public static boolean isWifiEnabled(Context context) {
+        WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return wifi.isWifiEnabled();
+    }
+
+    public static boolean isGPRSEnabled(Context context) {
+        ConnectivityManager connectMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isAvailable();
+    }
+
+    public static boolean isBlueToothEnabled(Context context) {
+        // TODO Auto-generated method stub
+        ConnectivityManager connectMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectMgr.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH).isAvailable();
+    }
+
     
     
  
