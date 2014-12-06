@@ -1,5 +1,12 @@
 package com.byod.utils;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.ksoap2.serialization.PropertyInfo;
+
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,6 +30,8 @@ public class DeviceUtils {
 
     private static final String TAG = "DeviceUtils";
 
+    private ExecutorService pool = Executors.newCachedThreadPool();
+    
     private static String sDeviceID = null;
 
     private static DeviceUtils sInstance = null;
@@ -167,8 +176,26 @@ public class DeviceUtils {
         if (sDeviceID == null || sDeviceID.length() < 1) {
             getsDeviceIdSHA1();
         }
-        //TODO communicate with server
-        return false;
+        PropertyInfo propertyInfo = new PropertyInfo();
+        propertyInfo.setName("deviceID");
+        propertyInfo.setValue(sDeviceID);
+        propertyInfo.setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return true;
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return true;
+        }
     }
 
     /**
@@ -242,4 +269,7 @@ public class DeviceUtils {
         return CommonUtils.SUCCESS;
         
     }
+    
+    
+ 
 }
