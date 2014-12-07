@@ -1,6 +1,7 @@
 package com.byod.sms.activities;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -27,13 +28,14 @@ import com.byod.sms.data.SMSAsyncQueryFactory;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import static com.byod.data.db.DatabaseHelper.ContactsColumns;
 import static com.byod.data.db.DatabaseHelper.SMSColumns.ADDRESS;
 import static com.byod.data.db.DatabaseHelper.SMSColumns.BODY;
 import static com.byod.data.db.DatabaseHelper.SMSColumns.DATE;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.MESSAGE_TYPE_SENT;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.READ;
 import static com.byod.data.db.DatabaseHelper.SMSColumns.TYPE;
 
 public class MessageBoxList extends Activity implements IAsyncQueryHandler {
@@ -49,8 +51,6 @@ public class MessageBoxList extends Activity implements IAsyncQueryHandler {
     private String thread;
     private IAsyncQueryFactory mAsyncQueryFactory;
     MessageBoxListAdapter mAdapter;
-
-    private HashSet<String> mSMSIdMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,13 +111,22 @@ public class MessageBoxList extends Activity implements IAsyncQueryHandler {
                     smsManager.sendTextMessage(address, null, text, null, null);
                 }
 
+                ContentValues values = new ContentValues();
+                values.put(BODY, nei);
+                values.put(ADDRESS, address);
+                values.put(TYPE, MESSAGE_TYPE_SENT);
+                values.put(DATE, System.currentTimeMillis());
+                values.put(READ, 1);
+
+                IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+                query.startInsert(values);
 //                ContentValues values = new ContentValues();
 //                values.put("address", address);
 //                values.put("body", nei);
 //                getContentResolver().insert(Uri.parse("content://sms/sent"), values);
 //                Toast.makeText(MessageBoxList.this, nei, Toast.LENGTH_SHORT).show();
-                IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
                 query.startQuery();
+                neirong.setText("");
             }
         });
     }
@@ -143,15 +152,11 @@ public class MessageBoxList extends Activity implements IAsyncQueryHandler {
     @Override
     public void onQueryComplete(int token, Object cookie, Cursor cursor) {
         if (cursor != null && cursor.getCount() > 0) {
-            mSMSIdMap = new HashSet<String>();
             cursor.moveToFirst();
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
                 String phone = cursor.getString(cursor.getColumnIndex(ADDRESS));
-                if (mSMSIdMap.contains(phone)) {
-                    continue;
-                } else {
-                    mSMSIdMap.add(phone);
+                if (phone.equals(address)) {
                     String date = sdf.format(new Date(cursor.getLong(cursor.getColumnIndex(DATE))));
                     if (cursor.getInt(cursor.getColumnIndex(TYPE)) == 1) {
                         MessageBean d = new MessageBean(phone,

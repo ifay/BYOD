@@ -37,7 +37,10 @@ import android.widget.Toast;
 import com.byod.R;
 import com.byod.bean.ContactBean;
 import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryFactory;
+import com.byod.data.IAsyncQueryHandler;
 import com.byod.sms.adapter.NewSmsAdapter;
+import com.byod.sms.data.SMSAsyncQueryFactory;
 import com.byod.ui.MyViewGroup;
 import com.byod.utils.BaseIntentUtil;
 import com.google.gson.Gson;
@@ -48,6 +51,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.byod.data.db.DatabaseHelper.SMSColumns.ADDRESS;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.BODY;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.DATE;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.MESSAGE_TYPE_SENT;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.READ;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.TYPE;
 
 public class NewSMSActivity extends Activity {
 
@@ -138,11 +148,36 @@ public class NewSMSActivity extends Activity {
                     for (ContactBean cb : selectContactList) {
                         Log.d("NewSMSActivity", "Send: " + cb.getPhoneNum());
                         String nei = neirong.getText().toString();
-//                        ContentValues values = new ContentValues();
-//                        values.put("address", cb.getPhoneNum());
-//                        values.put("body", nei);
-//                        getContentResolver().insert(Uri.parse("content://sms/sent"), values);
-//                        Toast.makeText(NewSMSActivity.this, nei, Toast.LENGTH_SHORT).show();
+                        ContentValues values = new ContentValues();
+                        values.put(BODY, nei);
+                        values.put(ADDRESS, cb.getPhoneNum());
+                        values.put(TYPE, MESSAGE_TYPE_SENT);
+                        values.put(DATE, System.currentTimeMillis());
+                        values.put(READ, 1);
+
+                        IAsyncQueryFactory mAsyncQueryFactory = new SMSAsyncQueryFactory(NewSMSActivity.this, new IAsyncQueryHandler() {
+                            @Override
+                            public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+
+                            }
+
+                            @Override
+                            public void onDeleteComplete(int token, Object cookie, int result) {
+
+                            }
+
+                            @Override
+                            public void onUpdateComplete(int token, Object cookie, int result) {
+
+                            }
+
+                            @Override
+                            public void onInsertComplete(int token, Object cookie, Uri uri) {
+
+                            }
+                        });
+                        IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+                        query.startInsert(values);
                         //直接调用短信接口发短信
                         SmsManager smsManager = SmsManager.getDefault();
                         List<String> divideContents = smsManager.divideMessage(nei);

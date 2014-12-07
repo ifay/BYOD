@@ -98,21 +98,17 @@ public class SMSActivity extends Activity implements IAsyncQueryHandler {
                 int threadId = cursor.getInt(5);
                 int read = cursor.getInt(6);
 
-                if (mSMSIdMap.containsKey(number)) {
-                    continue;
-                } else {
-                    SMSBean sb = new SMSBean();
-                    sb.setAddress(number);
-                    sb.setDate(date);
-                    sb.setMsg_snippet(body);
-                    sb.setThread_id(String.valueOf(threadId));
-                    sb.setRead(String.valueOf(read));
-                    mSmsList.add(sb);
+                SMSBean sb = new SMSBean();
+                sb.setAddress(number);
+                sb.setDate(date);
+                sb.setMsg_snippet(body);
+                sb.setThread_id(String.valueOf(threadId));
+                sb.setRead(String.valueOf(read));
 
-                    mSMSIdMap.put(number, sb);
-                }
+                mSMSIdMap.put(number, sb);
             }
             cursor.close();
+            mSmsList = new ArrayList<SMSBean>(mSMSIdMap.values());
             if (mSmsList.size() > 0) {
                 adapter.assignment(mSmsList);
             }
