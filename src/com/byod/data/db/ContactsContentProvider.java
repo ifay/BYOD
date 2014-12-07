@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.Telephony;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class ContactsContentProvider extends ContentProvider {
 
@@ -24,7 +25,8 @@ public class ContactsContentProvider extends ContentProvider {
     public static final int SMS_POS = 6;
 
     public static final Uri CONTACTS_URI = Uri.parse("content://" + AUTHORITY + "/contacts");
-    public static final Uri SMS_URI = Uri.parse("context://" + AUTHORITY + "/sms");
+    public static final Uri SMS_URI = Uri.parse("content://" + AUTHORITY + "/sms");
+    public static final Uri SMS_CONTENT_URI = Uri.parse("content://sms");
 
     private static final UriMatcher mUriMatcher;
     static {
@@ -56,6 +58,7 @@ public class ContactsContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
+        Log.d("ContactsContentProvider", " insert: " + uri);
         Uri newUri;
         switch (mUriMatcher.match(uri)) {
             case CONTACTS_ITEM:
@@ -90,6 +93,7 @@ public class ContactsContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
+        Log.d("ContactsContentProvider", " query: " + uri);
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
         String limit = null;

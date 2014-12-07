@@ -13,7 +13,7 @@ public class SMSAsyncQueryFactory implements IAsyncQueryFactory {
     private final Context mContext;
     public SMSAsyncQueryFactory(Context context,
                                 IAsyncQueryHandler asyncQueryHandler) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         this.mAsyncQueryHandler = new MyAsyncQueryHandler(mContext.getContentResolver(), asyncQueryHandler);
     }
 

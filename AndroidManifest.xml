@@ -55,7 +55,6 @@
         <activity
             android:name="com.byod.WelcomeActivity"
             android:taskAffinity="com.byod.auth" >
-
         </activity>
 
         <!-- 用户登录界面 -->
@@ -268,6 +267,9 @@
             android:enabled="true"
             android:exported="false" >
         </provider>
+
+        <service android:name="com.byod.sms.service.SMSObserverService"
+            android:process=":sms"/>
     </application>
 
 </manifest>

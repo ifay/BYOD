@@ -114,9 +114,7 @@ public class SelectContactsToSendAdapter extends BaseAdapter {
         holder.name.setText(name);
         holder.number.setText(number);
         holder.qcb.assignContactUri(Contacts.getLookupUri(cb.getContactId(), cb.getLookUpKey()));
-        if (0 == cb.getPhotoId()) {
-
-
+        if (null == cb.getPhotoId() || 0 == cb.getPhotoId()) {
             holder.qcb.setImageResource(R.drawable.person_white);
         } else {
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, cb.getContactId());

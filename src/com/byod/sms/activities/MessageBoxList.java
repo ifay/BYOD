@@ -1,14 +1,12 @@
 package com.byod.sms.activities;
 
 import android.app.Activity;
-import android.content.AsyncQueryHandler;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -19,14 +17,26 @@ import android.widget.Toast;
 
 import com.byod.R;
 import com.byod.bean.MessageBean;
+import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryFactory;
+import com.byod.data.IAsyncQueryHandler;
+import com.byod.data.db.ContactsContentProvider;
 import com.byod.sms.adapter.MessageBoxListAdapter;
+import com.byod.sms.data.SMSAsyncQueryFactory;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
-public class MessageBoxList extends Activity {
+import static com.byod.data.db.DatabaseHelper.ContactsColumns;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.ADDRESS;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.BODY;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.DATE;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.TYPE;
+
+public class MessageBoxList extends Activity implements IAsyncQueryHandler {
 
     private ListView talkView;
     private List<MessageBean> list = null;
@@ -35,8 +45,12 @@ public class MessageBoxList extends Activity {
     private Button btn_call;
     private EditText neirong;
     private SimpleDateFormat sdf;
-    private AsyncQueryHandler asyncQuery;
     private String address;
+    private String thread;
+    private IAsyncQueryFactory mAsyncQueryFactory;
+    MessageBoxListAdapter mAdapter;
+
+    private HashSet<String> mSMSIdMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,14 +63,17 @@ public class MessageBoxList extends Activity {
         fasong = (Button) findViewById(R.id.fasong);
         neirong = (EditText) findViewById(R.id.neirong);
 
-        String thread = getIntent().getStringExtra("threadId");
+        thread = getIntent().getStringExtra("threadId");
         address = getIntent().getStringExtra("phoneNumber");
         TextView tv = (TextView) findViewById(R.id.topbar_title);
         tv.setText(getPersonName(address));
 
         sdf = new SimpleDateFormat("MM-dd HH:mm");
 
-        init(thread);
+        talkView = (ListView) findViewById(R.id.list);
+        list = new ArrayList<MessageBean>();
+
+        mAsyncQueryFactory = new SMSAsyncQueryFactory(this, this);
 
         btn_return.setOnClickListener(new OnClickListener() {
             @Override
@@ -80,83 +97,109 @@ public class MessageBoxList extends Activity {
             @Override
             public void onClick(View v) {
                 String nei = neirong.getText().toString();
-                ContentValues values = new ContentValues();
-                values.put("address", address);
-                values.put("body", nei);
-                getContentResolver().insert(Uri.parse("content://sms/sent"), values);
-                Toast.makeText(MessageBoxList.this, nei, Toast.LENGTH_SHORT).show();
+
+                Log.d("NewSMSActivity", "Send: " + address);
+//                        ContentValues values = new ContentValues();
+//                        values.put("address", cb.getPhoneNum());
+//                        values.put("body", nei);
+//                        getContentResolver().insert(Uri.parse("content://sms/sent"), values);
+//                        Toast.makeText(NewSMSActivity.this, nei, Toast.LENGTH_SHORT).show();
+                //直接调用短信接口发短信
+                SmsManager smsManager = SmsManager.getDefault();
+                List<String> divideContents = smsManager.divideMessage(nei);
+                for (String text : divideContents) {
+                    smsManager.sendTextMessage(address, null, text, null, null);
+                }
+
+//                ContentValues values = new ContentValues();
+//                values.put("address", address);
+//                values.put("body", nei);
+//                getContentResolver().insert(Uri.parse("content://sms/sent"), values);
+//                Toast.makeText(MessageBoxList.this, nei, Toast.LENGTH_SHORT).show();
+                IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+                query.startQuery();
             }
         });
     }
 
-    private void init(String thread) {
-
-        asyncQuery = new MyAsyncQueryHandler(getContentResolver());
-
-        talkView = (ListView) findViewById(R.id.list);
-        list = new ArrayList<MessageBean>();
-
-        Uri uri = Uri.parse("content://sms");
-        String[] projection = new String[]{
-                "date",
-                "address",
-                "person",
-                "body",
-                "type"
-        };// 查询的列
-        asyncQuery.startQuery(0, null, uri, projection, "thread_id = " + thread, null,
-                "date asc");
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        list = new ArrayList<MessageBean>();
+//        MessageBean sb = new MessageBean("15311448992",
+//                sdf.format(new Date(System.currentTimeMillis())),
+//                "Test test, test.",
+//                R.layout.list_say_he_item);
+//        sb.setName("小张");
+//        list.add(sb);
+//        mAdapter = new MessageBoxListAdapter(MessageBoxList.this, list);
+//        talkView.setAdapter(mAdapter);
+//        talkView.setDivider(null);
+//        talkView.setSelection(list.size());
+        IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+        query.startQuery();
     }
 
-    /**
-     * 数据库异步查询类AsyncQueryHandler
-     *
-     * @author administrator
-     */
-    private class MyAsyncQueryHandler extends AsyncQueryHandler {
-
-        public MyAsyncQueryHandler(ContentResolver cr) {
-            super(cr);
-        }
-
-        @Override
-        protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor != null && cursor.getCount() > 0) {
-                cursor.moveToFirst();
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    cursor.moveToPosition(i);
-                    String date = sdf.format(new Date(cursor.getLong(cursor.getColumnIndex("date"))));
-                    if (cursor.getInt(cursor.getColumnIndex("type")) == 1) {
-                        MessageBean d = new MessageBean(cursor.getString(cursor.getColumnIndex("address")),
+    @Override
+    public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+        if (cursor != null && cursor.getCount() > 0) {
+            mSMSIdMap = new HashSet<String>();
+            cursor.moveToFirst();
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                String phone = cursor.getString(cursor.getColumnIndex(ADDRESS));
+                if (mSMSIdMap.contains(phone)) {
+                    continue;
+                } else {
+                    mSMSIdMap.add(phone);
+                    String date = sdf.format(new Date(cursor.getLong(cursor.getColumnIndex(DATE))));
+                    if (cursor.getInt(cursor.getColumnIndex(TYPE)) == 1) {
+                        MessageBean d = new MessageBean(phone,
                                 date,
-                                cursor.getString(cursor.getColumnIndex("body")),
+                                cursor.getString(cursor.getColumnIndex(BODY)),
                                 R.layout.list_say_he_item);
                         list.add(d);
                     } else {
-                        MessageBean d = new MessageBean(cursor.getString(cursor.getColumnIndex("address")),
+                        MessageBean d = new MessageBean(phone,
                                 date,
-                                cursor.getString(cursor.getColumnIndex("body")),
+                                cursor.getString(cursor.getColumnIndex(BODY)),
                                 R.layout.list_say_me_item);
                         list.add(d);
                     }
                 }
-                if (list.size() > 0) {
-                    talkView.setAdapter(new MessageBoxListAdapter(MessageBoxList.this, list));
-                    talkView.setDivider(null);
-                    talkView.setSelection(list.size());
-                } else {
-                    Toast.makeText(MessageBoxList.this, "没有短信进行操作", Toast.LENGTH_SHORT).show();
-                }
+            }
+            if (list.size() > 0) {
+                mAdapter = new MessageBoxListAdapter(MessageBoxList.this, list);
+                talkView.setAdapter(mAdapter);
+                talkView.setDivider(null);
+                talkView.setSelection(list.size());
+            } else {
+                Toast.makeText(MessageBoxList.this, "没有短信进行操作", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    @Override
+    public void onDeleteComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onUpdateComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onInsertComplete(int token, Object cookie, Uri uri) {
+
+    }
+
     public String getPersonName(String number) {
-        String[] projection = {ContactsContract.PhoneLookup.DISPLAY_NAME,};
+        String[] projection = {ContactsColumns.DISPLAY_NAME,};
         Cursor cursor = this.getContentResolver().query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                ContactsContentProvider.CONTACTS_URI,
                 projection,
-                ContactsContract.CommonDataKinds.Phone.NUMBER + " = '" + number + "'",
+                ContactsColumns.PHONE + " = '" + number + "'",
                 null,
                 null);
         if (cursor == null) {
@@ -165,10 +208,9 @@ public class MessageBoxList extends Activity {
         String name = number;
         for (int i = 0; i < cursor.getCount(); i++) {
             cursor.moveToPosition(i);
-            name = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+            name = cursor.getString(cursor.getColumnIndex(ContactsColumns.DISPLAY_NAME));
         }
         cursor.close();
         return name;
     }
-
 }

@@ -2,12 +2,9 @@ package com.byod.sms.activities;
 
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -17,9 +14,13 @@ import android.widget.ListView;
 
 import com.byod.R;
 import com.byod.bean.ContactBean;
-import com.byod.utils.BaseIntentUtil;
+import com.byod.contacts.data.ContactsAsyncQueryFactory;
+import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryFactory;
+import com.byod.data.IAsyncQueryHandler;
 import com.byod.sms.adapter.SelectContactsToSendAdapter;
 import com.byod.ui.QuickAlphabeticBar;
+import com.byod.utils.BaseIntentUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -29,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SelectContactsToSendActivity extends Activity {
+public class SelectContactsToSendActivity extends Activity implements IAsyncQueryHandler {
 
     private SelectContactsToSendAdapter adapter;
     private ListView personList;
@@ -43,6 +44,7 @@ public class SelectContactsToSendActivity extends Activity {
     private Button doneBtn;
     private Map<String, String> selectMap = null;
 
+    private IAsyncQueryFactory mAsyncQueryFactory;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,8 +68,6 @@ public class SelectContactsToSendActivity extends Activity {
         personList = (ListView) findViewById(R.id.list);
 
         alpha = (QuickAlphabeticBar) findViewById(R.id.fast_scroller);
-        asyncQuery = new MyAsyncQueryHandler(getContentResolver());
-        init();
 
         returnBtn = (Button) findViewById(R.id.btn_return);
         doneBtn = (Button) findViewById(R.id.btn_done);
@@ -89,78 +89,71 @@ public class SelectContactsToSendActivity extends Activity {
             }
         });
 
-
+        mAsyncQueryFactory = new ContactsAsyncQueryFactory(this, this);
     }
 
-    private void init() {
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // 联系人的Uri
-        String[] projection = {
-                BaseColumns._ID,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.DATA1,
-                "sort_key",
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-                ContactsContract.CommonDataKinds.Phone.PHOTO_ID,
-                ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY
-        }; // 查询的列
-        asyncQuery.startQuery(0, null, uri, projection, null, null,
-                "sort_key COLLATE LOCALIZED asc"); // 按照sort_key升序查询
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+        query.startQuery();
     }
 
-    private class MyAsyncQueryHandler extends AsyncQueryHandler {
+    /**
+     * 查询结束的回调函数
+     */
+    @Override
+    public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+        if (cursor != null && cursor.getCount() > 0) {
+            list = new ArrayList<ContactBean>();
+            cursor.moveToFirst();
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                int contactId = cursor.getInt(0);
+                String name = cursor.getString(1);
+                String number = cursor.getString(2);
+                String sortKey = cursor.getString(3);
+                String lookUpKey = cursor.getString(4);
 
-        public MyAsyncQueryHandler(ContentResolver cr) {
-            super(cr);
-        }
+                ContactBean cb = new ContactBean();
+                cb.setDisplayName(name);
+//					if (number.startsWith("+86")) {// 去除多余的中国地区号码标志，对这个程序没有影响。
+//						cb.setPhoneNum(number.substring(3));
+//					} else {
+                cb.setPhoneNum(number);
+//					}
+                cb.setSortKey(sortKey);
+                cb.setContactId(contactId);
+                cb.setLookUpKey(lookUpKey);
 
-        /**
-         * 查询结束的回调函数
-         */
-        @Override
-        protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor != null && cursor.getCount() > 0) {
-
-
-                list = new ArrayList<ContactBean>();
-                cursor.moveToFirst();
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    cursor.moveToPosition(i);
-                    String name = cursor.getString(1);
-                    String number = cursor.getString(2);
-                    String sortKey = cursor.getString(3);
-                    int contactId = cursor.getInt(4);
-                    Long photoId = cursor.getLong(5);
-                    String lookUpKey = cursor.getString(6);
-
-
-                    ContactBean cb = new ContactBean();
-                    cb.setDisplayName(name);
-                    //					if (number.startsWith("+86")) {// 去除多余的中国地区号码标志，对这个程序没有影响。
-                    //						cb.setPhoneNum(number.substring(3));
-                    //					} else {
-                    cb.setPhoneNum(number);
-                    //					}
-                    cb.setSortKey(sortKey);
-                    cb.setContactId(contactId);
-                    cb.setPhotoId(photoId);
-                    cb.setLookUpKey(lookUpKey);
-
-                    if (null == selectMap) {
-                    } else {
-                        if (selectMap.containsKey(number)) {
-                            cb.setSelected(1);
-                        }
+                if (null == selectMap) {
+                } else {
+                    if (selectMap.containsKey(number)) {
+                        cb.setSelected(1);
                     }
-
-                    list.add(cb);
-
-
                 }
-                if (list.size() > 0) {
-                    setAdapter(list);
-                }
+
+                list.add(cb);
+            }
+            cursor.close();
+            if (list.size() > 0) {
+                setAdapter(list);
             }
         }
+    }
+
+    @Override
+    public void onDeleteComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onUpdateComplete(int token, Object cookie, int result) {
+
+    }
+
+    @Override
+    public void onInsertComplete(int token, Object cookie, Uri uri) {
 
     }
 

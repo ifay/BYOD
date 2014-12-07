@@ -9,7 +9,6 @@ import android.provider.BaseColumns;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents.Insert;
-import android.provider.Telephony;
 import android.util.Log;
 
 
@@ -103,6 +102,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public static final int IS_READ_NO = 0;
     }
 
+    public interface SMSColumns {
+        public static final String _ID = BaseColumns._ID;
+        public static final String TYPE = "type";
+        public static final String THREAD_ID = "thread_id";
+        public static final String ADDRESS = "address";
+        public static final String DATE = "date";
+        public static final String READ = "read";
+        public static final String BODY = "body";
+        public static final String PROTOCOL = "protocol";
+
+        public static final int MESSAGE_TYPE_ALL    = 0;
+        public static final int MESSAGE_TYPE_INBOX  = 1;
+        public static final int MESSAGE_TYPE_SENT   = 2;
+        public static final int MESSAGE_TYPE_DRAFT  = 3;
+        public static final int MESSAGE_TYPE_OUTBOX = 4;
+        public static final int MESSAGE_TYPE_FAILED = 5; // for failed outgoing messages
+        public static final int MESSAGE_TYPE_QUEUED = 6; // for messages to send later
+    }
+
     public static synchronized DatabaseHelper getInstance(Context context) {
         if (sSingleton == null) {
             sSingleton = new DatabaseHelper(context, DATABASE_NAME);
@@ -179,39 +197,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void createSMSsTable(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.SMS_TABLE + " (" +
-                Telephony.Mms._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                Telephony.Mms.DATE + " INTEGER," +
-                Telephony.Mms.DATE_SENT + " INTEGER DEFAULT 0," +
-                Telephony.Mms.MESSAGE_BOX + " INTEGER," +
-                Telephony.Mms.READ + " INTEGER DEFAULT 0," +
-                Telephony.Mms.MESSAGE_ID + " TEXT," +
-                Telephony.Mms.SUBJECT + " TEXT," +
-                Telephony.Mms.SUBJECT_CHARSET + " INTEGER," +
-                Telephony.Mms.CONTENT_TYPE + " TEXT," +
-                Telephony.Mms.CONTENT_LOCATION + " TEXT," +
-                Telephony.Mms.EXPIRY + " INTEGER," +
-                Telephony.Mms.MESSAGE_CLASS + " TEXT," +
-                Telephony.Mms.MESSAGE_TYPE + " INTEGER," +
-                Telephony.Mms.MMS_VERSION + " INTEGER," +
-                Telephony.Mms.MESSAGE_SIZE + " INTEGER," +
-                Telephony.Mms.PRIORITY + " INTEGER," +
-                Telephony.Mms.READ_REPORT + " INTEGER," +
-                Telephony.Mms.REPORT_ALLOWED + " INTEGER," +
-                Telephony.Mms.RESPONSE_STATUS + " INTEGER," +
-                Telephony.Mms.STATUS + " INTEGER," +
-                Telephony.Mms.TRANSACTION_ID + " TEXT," +
-                Telephony.Mms.RETRIEVE_STATUS + " INTEGER," +
-                Telephony.Mms.RETRIEVE_TEXT + " TEXT," +
-                Telephony.Mms.RETRIEVE_TEXT_CHARSET + " INTEGER," +
-                Telephony.Mms.READ_STATUS + " INTEGER," +
-                Telephony.Mms.CONTENT_CLASS + " INTEGER," +
-                Telephony.Mms.RESPONSE_TEXT + " TEXT," +
-                Telephony.Mms.DELIVERY_TIME + " INTEGER," +
-                Telephony.Mms.DELIVERY_REPORT + " INTEGER," +
-                Telephony.Mms.LOCKED + " INTEGER DEFAULT 0," +
-                Telephony.Mms.SEEN + " INTEGER DEFAULT 0," +
-                Telephony.Mms.CREATOR + " TEXT," +
-                Telephony.Mms.TEXT_ONLY + " INTEGER DEFAULT 0" +
+                SMSColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                SMSColumns.DATE + " INTEGER," +
+                SMSColumns.READ + " INTEGER DEFAULT 0," +
+                SMSColumns.TYPE + " INTEGER," +
+                SMSColumns.ADDRESS + " TEXT, " +
+                SMSColumns.BODY + " TEXT, " +
+                SMSColumns.THREAD_ID + " INTEGER, " +
+                SMSColumns.PROTOCOL + " INTEGER DEFAULT 0" +
                 ");");
     }
 
