@@ -39,6 +39,7 @@
             android:layout_height="72dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="10dp"
+            android:background="@color/gray"
             android:src="@drawable/sms_add_select_contact_btn"/>
     </LinearLayout>
     <EditText
