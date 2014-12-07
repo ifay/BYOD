@@ -60,12 +60,19 @@ public class PeopleActivity extends Activity implements  IAsyncQueryHandler{
         addContactBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO 跳转到添加联系人界面，存到自己数据库
+                PeopleActivity.this.startActivity(new Intent(
+                        PeopleActivity.this, AddPeopleActivity.class
+                ));
             }
         });
 
-        mAsyncQueryFactory = new ContactsAsyncQueryFactory(getContentResolver(), this);
-        IAsyncQuery query = mAsyncQueryFactory.getSystemAsyncQuery();
+        mAsyncQueryFactory = new ContactsAsyncQueryFactory(this, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
         query.startQuery();
     }
 
@@ -81,12 +88,11 @@ public class PeopleActivity extends Activity implements  IAsyncQueryHandler{
             cursor.moveToFirst();
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
+                int contactId = cursor.getInt(0);
                 String name = cursor.getString(1);
                 String number = cursor.getString(2);
                 String sortKey = cursor.getString(3);
-                int contactId = cursor.getInt(4);
-                Long photoId = cursor.getLong(5);
-                String lookUpKey = cursor.getString(6);
+                String lookUpKey = cursor.getString(4);
 
                 if (contactIdMap.containsKey(contactId)) {
                     continue;
@@ -100,13 +106,13 @@ public class PeopleActivity extends Activity implements  IAsyncQueryHandler{
 //					}
                     cb.setSortKey(sortKey);
                     cb.setContactId(contactId);
-                    cb.setPhotoId(photoId);
                     cb.setLookUpKey(lookUpKey);
                     list.add(cb);
 
                     contactIdMap.put(contactId, cb);
                 }
             }
+            cursor.close();
             if (list.size() > 0) {
                 setAdapter(list);
             }

@@ -1,5 +1,6 @@
-package com.byod.contacts.data.db;
+package com.byod.data.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,6 +9,7 @@ import android.provider.BaseColumns;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents.Insert;
+import android.provider.Telephony;
 import android.util.Log;
 
 
@@ -15,7 +17,7 @@ import android.util.Log;
  * 联系人的Database helper. 设计成单例以确保所有的 {@link android.content.ContentProvider}
  * 使用的是同一个引用.
  */
-public class ContactsDatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "ContactsDatabaseHelper";
     /**
      * Contacts DB 版本号
@@ -23,14 +25,16 @@ public class ContactsDatabaseHelper extends SQLiteOpenHelper {
      *   0  第一个版本
      * </pre>
      */
-    private static final int DATABASE_VERSION = 0;
+    private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "contacts.db";
 
-    private static ContactsDatabaseHelper sSingleton = null;
+    private static DatabaseHelper sSingleton = null;
+
 
     public interface Tables {
         static final String CONTACTS_TABLE = "contacts";
         static final String CALLS_TABLE = "calls";
+        static final String SMS_TABLE = "sms";
     }
 
     public interface ContactsColumns {
@@ -99,14 +103,14 @@ public class ContactsDatabaseHelper extends SQLiteOpenHelper {
         public static final int IS_READ_NO = 0;
     }
 
-    public static synchronized ContactsDatabaseHelper getInstance(Context context) {
+    public static synchronized DatabaseHelper getInstance(Context context) {
         if (sSingleton == null) {
-            sSingleton = new ContactsDatabaseHelper(context, DATABASE_NAME);
+            sSingleton = new DatabaseHelper(context, DATABASE_NAME);
         }
         return sSingleton;
     }
 
-    protected ContactsDatabaseHelper(Context context, String databaseName) {
+    protected DatabaseHelper(Context context, String databaseName) {
         super(context, databaseName, null, DATABASE_VERSION);
         Resources resources = context.getResources();
     }
@@ -120,6 +124,7 @@ public class ContactsDatabaseHelper extends SQLiteOpenHelper {
         Log.i(TAG, "Bootstrapping database version: " + DATABASE_VERSION);
         createContactsTable(db);
         createCallsTable(db);
+        createSMSsTable(db);
     }
 
     @Override
@@ -172,5 +177,54 @@ public class ContactsDatabaseHelper extends SQLiteOpenHelper {
         ");");
     }
 
+    private void createSMSsTable(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.SMS_TABLE + " (" +
+                Telephony.Mms._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                Telephony.Mms.DATE + " INTEGER," +
+                Telephony.Mms.DATE_SENT + " INTEGER DEFAULT 0," +
+                Telephony.Mms.MESSAGE_BOX + " INTEGER," +
+                Telephony.Mms.READ + " INTEGER DEFAULT 0," +
+                Telephony.Mms.MESSAGE_ID + " TEXT," +
+                Telephony.Mms.SUBJECT + " TEXT," +
+                Telephony.Mms.SUBJECT_CHARSET + " INTEGER," +
+                Telephony.Mms.CONTENT_TYPE + " TEXT," +
+                Telephony.Mms.CONTENT_LOCATION + " TEXT," +
+                Telephony.Mms.EXPIRY + " INTEGER," +
+                Telephony.Mms.MESSAGE_CLASS + " TEXT," +
+                Telephony.Mms.MESSAGE_TYPE + " INTEGER," +
+                Telephony.Mms.MMS_VERSION + " INTEGER," +
+                Telephony.Mms.MESSAGE_SIZE + " INTEGER," +
+                Telephony.Mms.PRIORITY + " INTEGER," +
+                Telephony.Mms.READ_REPORT + " INTEGER," +
+                Telephony.Mms.REPORT_ALLOWED + " INTEGER," +
+                Telephony.Mms.RESPONSE_STATUS + " INTEGER," +
+                Telephony.Mms.STATUS + " INTEGER," +
+                Telephony.Mms.TRANSACTION_ID + " TEXT," +
+                Telephony.Mms.RETRIEVE_STATUS + " INTEGER," +
+                Telephony.Mms.RETRIEVE_TEXT + " TEXT," +
+                Telephony.Mms.RETRIEVE_TEXT_CHARSET + " INTEGER," +
+                Telephony.Mms.READ_STATUS + " INTEGER," +
+                Telephony.Mms.CONTENT_CLASS + " INTEGER," +
+                Telephony.Mms.RESPONSE_TEXT + " TEXT," +
+                Telephony.Mms.DELIVERY_TIME + " INTEGER," +
+                Telephony.Mms.DELIVERY_REPORT + " INTEGER," +
+                Telephony.Mms.LOCKED + " INTEGER DEFAULT 0," +
+                Telephony.Mms.SEEN + " INTEGER DEFAULT 0," +
+                Telephony.Mms.CREATOR + " TEXT," +
+                Telephony.Mms.TEXT_ONLY + " INTEGER DEFAULT 0" +
+                ");");
+    }
+
+    public long contactsInsert(ContentValues values) {
+        return getWritableDatabase().insert(Tables.CONTACTS_TABLE, null, values);
+    }
+
+    public long callsInsert(ContentValues values) {
+        return getWritableDatabase().insert(Tables.CALLS_TABLE, null, values);
+    }
+
+    public long smsInsert(ContentValues values) {
+        return getWritableDatabase().insert(Tables.SMS_TABLE, null, values);
+    }
 
 }

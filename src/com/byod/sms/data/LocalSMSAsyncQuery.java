@@ -1,4 +1,4 @@
-package com.byod.contacts.data;
+package com.byod.sms.data;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentValues;
@@ -13,9 +13,9 @@ import static com.byod.data.db.DatabaseHelper.ContactsColumns.LOOKUP_KEY;
 import static com.byod.data.db.DatabaseHelper.ContactsColumns.PHONE;
 import static com.byod.data.db.DatabaseHelper.ContactsColumns.SORT_KEY;
 
-public class LocalContactsAsyncQuery implements IAsyncQuery{
+public class LocalSMSAsyncQuery implements IAsyncQuery{
     private final AsyncQueryHandler mAsyncQueryHandler;
-    public LocalContactsAsyncQuery(AsyncQueryHandler asyncQueryHandler) {
+    public LocalSMSAsyncQuery(AsyncQueryHandler asyncQueryHandler) {
         this.mAsyncQueryHandler = asyncQueryHandler;
     }
     @Override

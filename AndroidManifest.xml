@@ -55,14 +55,7 @@
         <activity
             android:name="com.byod.WelcomeActivity"
             android:taskAffinity="com.byod.auth" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-                <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
 
         <!-- 用户登录界面 -->
@@ -92,21 +85,23 @@
         </activity>
 
         <!-- approve peer device register -->
-        <activity android:name="com.byod.PeerDeviceApproveActivity"></activity>
-        
+        <activity android:name="com.byod.PeerDeviceApproveActivity" />
+
         <!-- 信息上报系统 -->
-        <activity  android:name="com.byod.info.InfoActivity"
+        <activity
+            android:name="com.byod.info.InfoActivity"
             android:clearTaskOnLaunch="true"
             android:icon="@drawable/app_info"
             android:label="@string/infoActivityLabel"
             android:launchMode="singleTask"
             android:process=":info"
             android:screenOrientation="portrait"
-            android:taskAffinity="com.byod.info" 
+            android:taskAffinity="com.byod.info"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -188,7 +183,7 @@
             android:launchMode="singleTask"
             android:process=":contacts"
             android:screenOrientation="portrait"
-            android:taskAffinity="com.byod.auth"
+            android:taskAffinity=":contacts"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <intent-filter>
@@ -199,6 +194,17 @@
                 <data android:mimeType="vnd.android.cursor.dir/person" />
                 <data android:mimeType="vnd.android.cursor.dir/contact" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.byod.contacts.activities.AddPeopleActivity"
+            android:clearTaskOnLaunch="true"
+            android:label="@string/contactsActivityLabel"
+            android:launchMode="singleTask"
+            android:process=":contacts"
+            android:screenOrientation="portrait"
+            android:taskAffinity=":contacts"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
         <activity
             android:name="com.byod.dial.activities.DialActivity"
@@ -229,6 +235,14 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- launcher,小米手机里需要对系统默认应用进行设置 -->
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.byod.sms.activities.MessageBoxList"
@@ -246,11 +260,11 @@
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
 
-        <service android:name=".dial.service.T9Service" />
+        <service android:name="com.byod.dial.service.T9Service" />
 
         <provider
-            android:name=".contacts.data.ContactsContentProvider"
-            android:authorities="com.byod.contacts"
+            android:name="com.byod.data.db.ContactsContentProvider"
+            android:authorities="com.byod"
             android:enabled="true"
             android:exported="false" >
         </provider>
