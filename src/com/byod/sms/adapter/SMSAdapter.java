@@ -1,6 +1,8 @@
 package com.byod.sms.adapter;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,8 @@ import android.widget.TextView;
 
 import com.byod.R;
 import com.byod.bean.SMSBean;
+import com.byod.data.db.ContactsContentProvider;
+import com.byod.data.db.DatabaseHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +36,9 @@ public class SMSAdapter extends BaseAdapter {
     }
 
     public void assignment(List<SMSBean> list) {
+        Log.d("SMSAdapter", "list Size: " + list.size());
         this.list = list;
+        this.notifyDataSetChanged();
     }
 
     public void add(SMSBean bean) {
@@ -60,35 +66,47 @@ public class SMSAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
-        ViewHolder holder = null;
+        ViewHolder holder;
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.sms_list_item, parent, false);
+            convertView = mInflater.inflate(R.layout.sms_list_item, null);
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.name);
-            holder.count = (TextView) convertView.findViewById(R.id.count);
             holder.date = (TextView) convertView.findViewById(R.id.date);
-            holder.content = (TextView) convertView.findViewById(R.id.content);
+            convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.name.setText(list.get(position).getAddress());
-        holder.count.setText("(" + list.get(position).getMsg_count() + ")");
+        holder.name.setText(getPersonName(list.get(position).getAddress()));
 
         this.d.setTime(list.get(position).getDate());
         holder.date.setText(this.sdf.format(d));
 
-        holder.content.setText(list.get(position).getMsg_snippet());
-
-        convertView.setTag(holder);
         return convertView;
     }
 
     public final class ViewHolder {
         public TextView name;
-        public TextView count;
         public TextView date;
-        public TextView content;
+    }
+
+    public String getPersonName(String number) {
+        String[] projection = {DatabaseHelper.ContactsColumns.DISPLAY_NAME,};
+        Cursor cursor = this.context.getContentResolver().query(
+                ContactsContentProvider.CONTACTS_URI,
+                projection,
+                DatabaseHelper.ContactsColumns.PHONE + " = '" + number + "'",
+                null,
+                null);
+        if (cursor == null) {
+            return number;
+        }
+        String name = number;
+        for (int i = 0; i < cursor.getCount(); i++) {
+            cursor.moveToPosition(i);
+            name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ContactsColumns.DISPLAY_NAME));
+        }
+        cursor.close();
+        return name;
     }
 }

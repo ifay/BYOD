@@ -3,6 +3,7 @@ package com.byod.sms.activities;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -10,10 +11,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,9 +36,13 @@ import android.widget.Toast;
 
 import com.byod.R;
 import com.byod.bean.ContactBean;
-import com.byod.utils.BaseIntentUtil;
+import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryFactory;
+import com.byod.data.IAsyncQueryHandler;
 import com.byod.sms.adapter.NewSmsAdapter;
+import com.byod.sms.data.SMSAsyncQueryFactory;
 import com.byod.ui.MyViewGroup;
+import com.byod.utils.BaseIntentUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -45,11 +52,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.byod.data.db.DatabaseHelper.SMSColumns.ADDRESS;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.BODY;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.DATE;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.MESSAGE_TYPE_SENT;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.READ;
+import static com.byod.data.db.DatabaseHelper.SMSColumns.TYPE;
+
 public class NewSMSActivity extends Activity {
 
     private Button btn_return;
     private Button add_btn;
     private Button fasong;
+    private EditText neirong;
     private List<ContactBean> selectContactList = null;
 
     private MyViewGroup mvg;
@@ -109,6 +124,8 @@ public class NewSMSActivity extends Activity {
         });
 
         fasong = (Button) findViewById(R.id.fasong);
+        neirong = (EditText) findViewById(R.id.neirong);
+
         fasong.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,13 +145,48 @@ public class NewSMSActivity extends Activity {
                 if (null == selectContactList || selectContactList.size() < 1) {
                     Toast.makeText(NewSMSActivity.this, "请输入发送目标", Toast.LENGTH_SHORT).show();
                 } else {
-
                     for (ContactBean cb : selectContactList) {
+                        Log.d("NewSMSActivity", "Send: " + cb.getPhoneNum());
+                        String nei = neirong.getText().toString();
+                        ContentValues values = new ContentValues();
+                        values.put(BODY, nei);
+                        values.put(ADDRESS, cb.getPhoneNum());
+                        values.put(TYPE, MESSAGE_TYPE_SENT);
+                        values.put(DATE, System.currentTimeMillis());
+                        values.put(READ, 1);
 
-                        System.out.println(cb.getDisplayName());
-                        System.out.println(cb.getPhoneNum());
-                        System.out.println("------");
+                        IAsyncQueryFactory mAsyncQueryFactory = new SMSAsyncQueryFactory(NewSMSActivity.this, new IAsyncQueryHandler() {
+                            @Override
+                            public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+
+                            }
+
+                            @Override
+                            public void onDeleteComplete(int token, Object cookie, int result) {
+
+                            }
+
+                            @Override
+                            public void onUpdateComplete(int token, Object cookie, int result) {
+
+                            }
+
+                            @Override
+                            public void onInsertComplete(int token, Object cookie, Uri uri) {
+
+                            }
+                        });
+                        IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
+                        query.startInsert(values);
+                        //直接调用短信接口发短信
+                        SmsManager smsManager = SmsManager.getDefault();
+                        List<String> divideContents = smsManager.divideMessage(nei);
+                        for (String text : divideContents) {
+                            smsManager.sendTextMessage(cb.getPhoneNum(), null, text, null, null);
+                        }
                     }
+                    neirong.setText("");
+                    finish();
                 }
 
             }
@@ -166,7 +218,6 @@ public class NewSMSActivity extends Activity {
 
 
     private void query()
-
     {
         Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // 联系人的Uri
         String[] projection = {

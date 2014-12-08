@@ -1,13 +1,13 @@
-package com.byod.contacts.data;
+package com.byod.sms.data;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentValues;
 
 import com.byod.data.IAsyncQuery;
 
-class FileContactsAsyncQuery implements IAsyncQuery{
+class FileSMSAsyncQuery implements IAsyncQuery{
     private final AsyncQueryHandler mAsyncQueryHandler;
-    public FileContactsAsyncQuery(AsyncQueryHandler asyncQueryHandler) {
+    public FileSMSAsyncQuery(AsyncQueryHandler asyncQueryHandler) {
         this.mAsyncQueryHandler = asyncQueryHandler;
     }
     @Override
