@@ -17,10 +17,10 @@ public class WebConnectCallable implements Callable {
     private static String TAG = "WebConnectCallable";
     private String url;
     private String nameSpace;
-    private PropertyInfo propertyInfo;
+    private PropertyInfo[] propertyInfo;
     private String method;
     
-    public WebConnectCallable (String url, String nameSpace, String method, PropertyInfo propertyInfo) {
+    public WebConnectCallable (String url, String nameSpace, String method, PropertyInfo[] propertyInfo) {
         this.nameSpace = nameSpace;
         this.url = url;
         this.propertyInfo = propertyInfo;
@@ -33,22 +33,21 @@ public class WebConnectCallable implements Callable {
         ht.debug = true;
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         SoapObject request = new SoapObject(nameSpace, method);
-        request.addProperty(propertyInfo);
+        for (PropertyInfo property : propertyInfo) {
+            request.addProperty(property);
+        }
         envelope.bodyOut = request;
         try {
             ht.call(null, envelope);
             Object obj = envelope.getResponse();
-            Log.d(TAG,"result is "+obj.toString());
+            Log.d(TAG,method + " result is "+obj.toString());
             return obj.toString();
         } catch (HttpResponseException e) {
-            e.printStackTrace();
-            return null;
+            throw e;
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw e;
         } catch (XmlPullParserException e) {
-            e.printStackTrace();
-            return null;
+            throw e;
         }
     }
 

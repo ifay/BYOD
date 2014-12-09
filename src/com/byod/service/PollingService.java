@@ -89,11 +89,15 @@ public class PollingService extends Service {
         public void run() {
             //向server查询是否有peer device,返回devieID，deviceName | null
             String[] peerInfo = null;
-            peerInfo = DeviceUtils.queryPeerDevices(deviceID);
-
-            if (peerInfo != null) {
-                showPeerDeviceNotification(peerInfo);
+            try {
+                peerInfo = DeviceUtils.queryPeerDevices(deviceID);
+                if (peerInfo != null) {
+                    showPeerDeviceNotification(peerInfo);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
     }
 

@@ -59,7 +59,7 @@ public class AuthenticateActivity extends Activity {
                 case MSG_NOT_COMPLIANCED:
                     // 合规性检测失败,退出应用
                     Bundle data = msg.getData();
-                    int checkResult = data.getInt(PolicyUtils.POLICY_RESULT);   //TODO 如何和策略名對應上
+                    int checkResult = data.getInt(PolicyUtils.POLICY_RESULT);
                     Toast.makeText(mActivity, "设备不符合安全规定" + checkResult +
                             "，应用即将退出", Toast.LENGTH_LONG).show();
                     setResult(Activity.RESULT_CANCELED, intent);
@@ -189,27 +189,24 @@ public class AuthenticateActivity extends Activity {
         intent = getIntent();
 
         // 2. check the device compliance
-        Thread t = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                int rst = DeviceUtils.isDeviceComplianced(mActivity);
-                if (rst == PolicyUtils.CODE_COMPLIANCED) {
-                    handler.sendEmptyMessage(MSG_COMPLIANCED);
-                    //直接进行后续操作
-                } else {
-                    Message msg = new Message();
-                    Bundle data = new Bundle();
-                    data.putInt(PolicyUtils.POLICY_RESULT, rst);
-                    msg.setData(data);
-                    msg.what = MSG_NOT_COMPLIANCED;
-                    handler.sendMessage(msg);
-                }
+        String rst;
+        try {
+            rst = DeviceUtils.isDeviceComplianced(mActivity);
+            if (rst == null) {
+                handler.sendEmptyMessage(MSG_COMPLIANCED);
+                //直接进行后续操作
+            } else {
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                data.putString(PolicyUtils.POLICY_RESULT, rst);
+                msg.setData(data);
+                msg.what = MSG_NOT_COMPLIANCED;
+                handler.sendMessage(msg);
             }
-        });
-        t.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
     @Override
     public void onBackPressed() {
         Log.d(TAG, "onBackPressed");
