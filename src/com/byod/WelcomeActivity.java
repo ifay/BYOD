@@ -9,13 +9,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.byod.application.DeviceRegisterActivity;
-import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.PolicyUtils;
 
@@ -117,7 +117,9 @@ public class WelcomeActivity extends Activity {
                     break;
                 case MSG_POLICY_CHECK_FAILED:
                     checkPolicy.setText(R.string.check_failed);
-                    welcomeResultBtn.setText("策略检测未通过，点击退出");
+                    Bundle data = msg.getData();
+                    String result = data.getString(POLICY_FAIL_REASON);
+                    welcomeResultBtn.setText("策略"+result+"检测未通过\n点击退出");
                     welcomeResultBtn.setVisibility(View.VISIBLE);
                     welcomeResultBtn.setOnClickListener(exit);
                     break;
@@ -182,7 +184,7 @@ public class WelcomeActivity extends Activity {
      */
     private boolean checkRegistered(){
         if (PolicyUtils.getLatestPolicyTime(ctx, 0L) == 0L) {
-            handler.sendEmptyMessage(MSG_DEV_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
+            handler.sendEmptyMessage(MSG_DEV_NOT_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
             return false;
         } else {
             handler.sendEmptyMessage(MSG_DEV_REGISTERED);
@@ -198,9 +200,9 @@ public class WelcomeActivity extends Activity {
         try {
             isLocked = DeviceUtils.getInstance(ctx).isDeviceLocked();
             if (isLocked == false) {
-                handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);///////MSG_DEV_LOCK
+                handler.sendEmptyMessage(MSG_DEV_NOT_LOCK);
             } else {
-                handler.sendEmptyMessage(MSG_DEV_LOCK);
+                handler.sendEmptyMessage(MSG_DEV_LOCK);///////MSG_DEV_LOCK
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -215,9 +217,9 @@ public class WelcomeActivity extends Activity {
     private void checkPolicySync() {
         try {
             PolicyUtils.getDevicePolicy(ctx, DeviceUtils.getInstance(ctx).getsDeviceIdSHA1());
-                handler.sendEmptyMessage(MSG_POLICY_SYNC_OK);
+            handler.sendEmptyMessage(MSG_POLICY_SYNC_OK);
         } catch (Exception e) {
-            handler.sendEmptyMessage(MSG_POLICY_SYNC_FAILED);
+            handler.sendEmptyMessage(MSG_POLICY_SYNC_FAILED);////////MSG_POLICY_SYNC_FAILED
             e.printStackTrace();
         }
     }
@@ -227,18 +229,21 @@ public class WelcomeActivity extends Activity {
      * @return Policy Code
      */
     private void checkPolicyResult() {
+        Log.d(TAG,"checkpolicyResult");
         String policyCode;
         try {
             policyCode = DeviceUtils.isDeviceComplianced(ctx);
             if(policyCode == null) {
                 handler.sendEmptyMessage(MSG_POLICY_CHECKED);
             } else {
+                ///////////TODO unComment below
+                Log.d(TAG,"policCode:"+policyCode);
                 Message msg = new Message();
                 msg.what = MSG_POLICY_CHECK_FAILED;
                 Bundle data = new Bundle();
                 data.putString(POLICY_FAIL_REASON, policyCode);
                 msg.setData(data);
-                handler.sendEmptyMessage(MSG_POLICY_CHECK_FAILED);
+                handler.sendMessage(msg);
             }
         } catch (Exception e) {
             e.printStackTrace();

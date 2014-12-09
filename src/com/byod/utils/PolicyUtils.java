@@ -114,7 +114,7 @@ public class PolicyUtils {
     }
 
     /**
-     * 本方法需要连接网络，不要直接使用
+     * 本方法需要连接网络，不要直接使用\
      * 从服务器请求策略是否有更新，若有，则同步下来，解析json，写到本地的sharedPreference中
      *
      * @throws Exception 
@@ -126,6 +126,7 @@ public class PolicyUtils {
                 return;
             } else {
                 PropertyInfo[] property = new PropertyInfo[1];
+                property[0] = new PropertyInfo();
                 property[0].setName("deviceID");
                 property[0].setValue(deviceID);
                 property[0].setType(PropertyInfo.STRING_CLASS);
@@ -149,6 +150,7 @@ public class PolicyUtils {
      * @return
      */
     public static String checkPolicy(Context context) {
+        Log.d(TAG,"checkPolicy");
         //PREF_DEVICE_ACCESS_START_TIME
         int startTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_START_TIME, -1);
         int endTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_END_TIME, -1);
@@ -230,6 +232,7 @@ public class PolicyUtils {
         //从服务器请求最新的策略的时间，和本地存储的时间比较，若不同，则返回false
         Long oldPolicy = getPolicyLong(context, PREF_AUTH_POLICY_TIME, 0L);
         PropertyInfo[] property = new PropertyInfo[1];
+        property[0] = new PropertyInfo();
         property[0].setName("deviceID");
         property[0].setValue(deviceID);
         property[0].setType(PropertyInfo.STRING_CLASS);

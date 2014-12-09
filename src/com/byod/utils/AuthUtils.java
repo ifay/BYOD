@@ -21,12 +21,15 @@ public class AuthUtils {
      */
     public static boolean login(String userAccount, String pwd, String deviceID) {
         PropertyInfo[] properties = new PropertyInfo[3];
+        properties[0] = new PropertyInfo();
         properties[0].setName("userAccount");
         properties[0].setValue(userAccount);
         properties[0].setType(PropertyInfo.STRING_CLASS);
+        properties[1] = new PropertyInfo();
         properties[1].setName("pwd");
         properties[1].setValue(pwd);
         properties[1].setType(PropertyInfo.STRING_CLASS);
+        properties[2] = new PropertyInfo();
         properties[2].setName("deviceID");
         properties[2].setValue(deviceID);
         properties[2].setType(PropertyInfo.STRING_CLASS);
@@ -58,9 +61,11 @@ public class AuthUtils {
      */
     public static boolean isUserAndDeviceBinded(String userAccount, String deviceID) throws Exception {
         PropertyInfo[] properties = new PropertyInfo[2];
+        properties[0] = new PropertyInfo();
         properties[0].setName("userAccount");
         properties[0].setValue(userAccount);
         properties[0].setType(PropertyInfo.STRING_CLASS);
+        properties[1] = new PropertyInfo();
         properties[1].setName("deviceID");
         properties[1].setValue(deviceID);
         properties[1].setType(PropertyInfo.STRING_CLASS);
@@ -88,18 +93,20 @@ public class AuthUtils {
      * @return
      * @throws Exception 
      */
-    public static boolean addDeviceToUser(String userAccount) throws Exception {
+/*    public static boolean addDeviceToUser(String userAccount) throws Exception {
         // TODO 
         // 将context中的设备相关信息全部发送至服务器
         PropertyInfo[] properties = new PropertyInfo[2];
+        properties[0] = new PropertyInfo();
         properties[0].setName("userAccount");
         properties[0].setValue(userAccount);
         properties[0].setType(PropertyInfo.STRING_CLASS);
+        properties[1] = new PropertyInfo();
         properties[1].setName("deviceJson");
         properties[1].setValue(userAccount);//TODO  参数待定
         properties[1].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "deviceRegister", properties);//////
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "deviceRegister", properties);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
@@ -113,10 +120,12 @@ public class AuthUtils {
             throw e;
         }
     }
-
+*/
+    
     //根据用户的账号获得ID
     public static String getUserID(String userAccount) throws Exception  {
         PropertyInfo[] properties = new PropertyInfo[1];
+        properties[0] = new PropertyInfo();
         properties[0].setName("userAccount");
         properties[0].setValue(userAccount);
         properties[0].setType(PropertyInfo.STRING_CLASS);

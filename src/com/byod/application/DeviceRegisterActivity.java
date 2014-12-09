@@ -46,6 +46,8 @@ public class DeviceRegisterActivity extends Activity {
     private static final int MSG_REGISTER_APPROVED = 5000;
     private static final int MSG_REGISTER_DECLINED = 5001;
     private static final int MSG_AUTH_FAIL = 6000;
+    private static final int MSG_AUTH_USER_LOGOFF = 7000;   //用户不存在|已注销
+    
     private static String POLICY_FAIL_REASON = "policy_fail_reason";
 
     private int authFailCount = 0;
@@ -108,11 +110,18 @@ public class DeviceRegisterActivity extends Activity {
                     break;
                 case MSG_AUTH_FAIL:
                     authFailCount++;
+                    Toast.makeText(mActivity, "密码错误", Toast.LENGTH_SHORT).show();
                     if (authFailCount >= 3) {
                         //server will Lock user TODO Server
                         Toast.makeText(mActivity, "登录错误次数超过3次，应用退出", Toast.LENGTH_LONG).show();
                         BYODApplication.getInstance().exit();
                     }
+                    break;
+                case MSG_AUTH_USER_LOGOFF:
+                    //用户已注销，无法再次登录，设备上的相关信息擦除
+                    Toast.makeText(mActivity, "该用户已注销，BYOD将安全退出", Toast.LENGTH_LONG).show();
+//                    BYODApplication.getInstance().exit();
+                    break;
                 default:
                     break;
             }
@@ -145,7 +154,8 @@ public class DeviceRegisterActivity extends Activity {
             try {
                 deviceNum = DeviceUtils.getUserDeviceNum(userAccount, userPwd);
                 if (deviceNum < 0) {
-                    handler.sendEmptyMessage(MSG_AUTH_FAIL);
+                    Log.d(TAG,"deviceNum is "+deviceNum);
+                    handler.sendEmptyMessage(MSG_AUTH_USER_LOGOFF);    ///////TODO MSG_AUTH_FAIL
                 } else if (deviceNum == 0) {
                     handler.sendEmptyMessage(MSG_FIRST_DEVICE);
                 } else {
@@ -185,7 +195,7 @@ public class DeviceRegisterActivity extends Activity {
                     Bundle data = new Bundle();
                     data.putString(POLICY_FAIL_REASON, rst);
                     msg.setData(data);
-                    handler.sendEmptyMessage(MSG_POLICY_FAIL);
+                    handler.sendMessage(msg);
                 }
             } catch (Exception e) {
                 handler.sendEmptyMessage(MSG_SYNC_POLICY_FAIL);

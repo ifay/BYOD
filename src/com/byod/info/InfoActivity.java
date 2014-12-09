@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -27,7 +29,6 @@ public class InfoActivity extends Activity{
     private static final String TAG = "InfoActivity";
     private InfoActivity mActivity = null;
     private String url = CommonUtils.ONLINE_SERVER + "/INFO/logon/LogonAction.action"; 
-//    private String url2 = CommonUtils.ONLINE_SERVER + "/INFO";
     private String userID;
 
     private WebView infoView = null;
@@ -47,7 +48,8 @@ public class InfoActivity extends Activity{
             Intent i = new Intent(mActivity, AuthenticateActivity.class);
             startActivity(i);
         }
-        url = url+"?userid="+userAccount+"&password=yyf123456!"; //TODO
+        //url = url+"?userid="+userAccount+"&password=yyf123456"; //TODO
+        url = url+"?userid="+"xiaowang"+"&password=yyf123456"; //TODO
         Log.d(TAG, url);
         initView();
     }
@@ -55,6 +57,7 @@ public class InfoActivity extends Activity{
     @SuppressLint("SetJavaScriptEnabled")
     private void initView() {
         infoView = (WebView) findViewById(R.id.info);
+        infoView.setOnLongClickListener(longClickListener);
         //set view properties
         webSettings = infoView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -88,4 +91,15 @@ public class InfoActivity extends Activity{
         Log.d(TAG, url);
         infoView.loadUrl(url);
     }
+    
+    private OnLongClickListener longClickListener = new OnLongClickListener() {
+        
+        @Override
+        public boolean onLongClick(View v) {
+            //禁止剪贴板操作。。。？加密剪贴板数据？
+            Toast.makeText(mActivity, "系统禁止复制粘贴信息", Toast.LENGTH_LONG).show();
+            return true;
+        }
+    };
+
 }

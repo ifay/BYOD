@@ -40,7 +40,7 @@ public class WebConnectCallable implements Callable {
         try {
             ht.call(null, envelope);
             Object obj = envelope.getResponse();
-            Log.d(TAG,"result is "+obj.toString());
+            Log.d(TAG,method + " result is "+obj.toString());
             return obj.toString();
         } catch (HttpResponseException e) {
             throw e;

@@ -80,6 +80,7 @@ public class DeviceUtils {
         }
         sDeviceManufacturer = Build.MANUFACTURER.toLowerCase();
         Log.d(TAG, "sDeviceManufacturer:"+sDeviceManufacturer);
+        Log.d(TAG, "pseudoID:"+PseudoID);
     }
 
 
@@ -156,9 +157,11 @@ public class DeviceUtils {
      */
     public static int getUserDeviceNum(String userAccount, String userPwd) throws Exception {
         PropertyInfo[] property = new PropertyInfo[2];
+        property[0] = new PropertyInfo();
         property[0].setName("userAccount");
         property[0].setValue(userAccount);
         property[0].setType(PropertyInfo.STRING_CLASS);
+        property[1] = new PropertyInfo();
         property[1].setName("pwd");
         property[1].setValue(userPwd);
         property[1].setType(PropertyInfo.STRING_CLASS);
@@ -198,6 +201,7 @@ public class DeviceUtils {
             getsDeviceIdSHA1();
         }
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
         propertyInfo[0].setValue(sDeviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
@@ -234,7 +238,8 @@ public class DeviceUtils {
         //send req to server, select by deviceiD
         String deviceID = getsDeviceIdSHA1();
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
-        propertyInfo[0].setName("deviceID");////////TODO 用JSON格式
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceID");
         propertyInfo[0].setValue(deviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
@@ -253,43 +258,44 @@ public class DeviceUtils {
         }
     }
     
-    private JSONStringer generateDeviceJSON (Context context, boolean isFirst) {
+    public JSONStringer generateDeviceJSON (Context context, boolean isFirst) {
         LocationUtils location = new LocationUtils(context);
         JSONStringer deviceJson = new JSONStringer();
         try {
             deviceJson.object();
-            deviceJson.key("deviceID");
+            deviceJson.key("deviceid");
             deviceJson.value(sDeviceID);
-            deviceJson.key("userAccount");
+            deviceJson.key("useraccount");
             deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
-            deviceJson.key("deviceName");
+            deviceJson.key("devicename");
             deviceJson.value(sDeviceManufacturer);
-            deviceJson.key("deviceOS");
+            deviceJson.key("deviceos");
             deviceJson.value(2000);//Android
-            deviceJson.key("deviceMAC");
+            deviceJson.key("devicemac");
             deviceJson.value(WLAN_MAC);
-            deviceJson.key("devicePhoneNum");
+            deviceJson.key("devicephonenum");
             deviceJson.value(TEL);
-            deviceJson.key("deviceIsLock");
+            deviceJson.key("deviceislock");
             deviceJson.value(0);
-            deviceJson.key("deviceIsDel");
+            deviceJson.key("deviceisdel");
             deviceJson.value(0);
             deviceJson.key("deviceInitTime");
-            deviceJson.value(new Date(System.currentTimeMillis())); //TODO 日期格式 long型
-            deviceJson.key("deviceValidPeriod");
+            Date date = new Date();
+            deviceJson.value(date.getTime()); //TODO 日期格式 long型
+            deviceJson.key("devicevalidperiod");
             deviceJson.value(365);////TODO 暂定365天有效。服务器需要支持修改
-            deviceJson.key("deviceIsIllegal");
+            deviceJson.key("deviceisillegal");
             deviceJson.value(0);
-            deviceJson.key("deviceIsActive");
-            deviceJson.value(isFirst? 1: 0);
-            deviceJson.key("deviceIsLogout");
+            deviceJson.key("deviceisactive");
+            deviceJson.value(isFirst? 1: 0); //第一台设备不做peer校验，直接注册
+            deviceJson.key("deviceislogout");
             deviceJson.value(0);
             deviceJson.key("deviceEaster");
             deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
             deviceJson.key("bakStr1");
             deviceJson.value(location.getLocation());//TODO 目前是经度+空格+纬度
             deviceJson.endObject();
-            Log.d(TAG,deviceJson.toString());
+            Log.d(TAG,"JSON-----"+deviceJson.toString());
         }catch (JSONException e) {
             e.printStackTrace();
         }
@@ -307,7 +313,8 @@ public class DeviceUtils {
             return CommonUtils.FAIL;
         }
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
-        propertyInfo[0].setName("deviceJSON");////////TODO 用JSON格式
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceJSON");
         propertyInfo[0].setValue(deviceJson);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
@@ -336,11 +343,12 @@ public class DeviceUtils {
     public static String[] queryPeerDevices(String deviceID) throws Exception {
         // TODO query server use thread
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
         propertyInfo[0].setValue(sDeviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);/////method change TODO
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "queryPeerDevices", propertyInfo);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
@@ -348,7 +356,8 @@ public class DeviceUtils {
         try {
             String result = future.get();
 //            return result;
-            //TODO 如何返回 设备信息呢？ 用JSON？///////////
+            //服务器用JSON返回信息///////////WebServiceImpl
+            // 返回 deviceid，devicename
         } catch (InterruptedException e) {
             throw e;
         } catch (ExecutionException e) {
@@ -367,11 +376,12 @@ public class DeviceUtils {
      */
     public static boolean approveDevice(String deviceID) throws Exception {
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
         propertyInfo[0].setValue(sDeviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "setDeviceActive", propertyInfo);/////method change TODO
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "setDeviceActive", propertyInfo);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
@@ -395,11 +405,12 @@ public class DeviceUtils {
     public boolean checkRegRequestApproved() throws Exception {
         String deviceID = getsDeviceIdSHA1();
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
         propertyInfo[0].setValue(sDeviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceActive", propertyInfo);/////method change TODO
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceActive", propertyInfo);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }

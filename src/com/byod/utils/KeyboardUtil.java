@@ -3,6 +3,19 @@
  */
 package com.byod.utils;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.ksoap2.serialization.PropertyInfo;
+
 import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.Keyboard;
@@ -15,9 +28,6 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.byod.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author ifay
@@ -32,7 +42,10 @@ public class KeyboardUtil {
     private boolean isUpper = false;    //是否大写
 
     private EditText ed;
-    private String TAG = "KeyboardUtil";
+    private static String TAG = "KeyboardUtil";
+    public static String sKbID;
+    
+    private static ExecutorService pool = Executors.newCachedThreadPool();
 
     public KeyboardUtil(Activity act, Context ctx, EditText edit, int viewID) {
         this.act = act;
@@ -203,5 +216,67 @@ public class KeyboardUtil {
         }
         isUpper = !isUpper;
         keyboardView.setKeyboard(kChar);
+    }
+    
+    /**
+     * 从服务器获取数据JSON格式
+     * {"KBID":"","label":["1":"49".....],"code":[]}
+     * @return
+     * @throws Exception
+     */
+    public String getRandomKeyboard(String userAccount) throws Exception{
+        String result = "";
+        Date date = new Date();
+        PropertyInfo[] properties = new PropertyInfo[2];
+        properties[0] = new PropertyInfo();
+        properties[0].setName("rqTime");
+        properties[0].setValue(date.getTime());
+        properties[0].setType(PropertyInfo.LONG_CLASS);
+        properties[1] = new PropertyInfo();
+        properties[1].setName("userAccount");
+        properties[1].setValue(userAccount);
+        properties[1].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "genRandomKeyboard", properties);
+        Future<String> future = pool.submit(task);
+        try {
+            result = future.get();
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
+        return result;
+    }
+    
+    /**
+     * 根据服务器传回的键盘布局数据 解析显示。
+     * @param keyboardJson
+     * 返回值是什么？
+     */
+    public void showRandomKeyboard(String keyboardJson) throws Exception {
+        //1.parase json
+        if (keyboardJson.length() < 1) {
+            throw new Exception("empty JSON");
+        }
+
+        JSONArray labelArr;
+        JSONArray codeArr;
+
+        try {
+            JSONObject keyboard = new JSONObject(keyboardJson);
+            sKbID = keyboard.getString("KBID");
+            labelArr = keyboard.getJSONArray("label");
+            codeArr = keyboard.getJSONArray("code");
+
+            List<Key> keyList = kChar.getKeys();
+            for(int i = 0 ; i < keyList.size() ; i++) {
+                keyList.get(i).label = (CharSequence)labelArr.getString(i);
+                keyList.get(i).codes[0] = Integer.parseInt(codeArr.getString(i).trim());
+            }
+            //2. show
+            keyboardView.setKeyboard(kChar);
+        } catch (JSONException e) {
+            throw e;
+        }
     }
 }
