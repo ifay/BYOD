@@ -18,7 +18,6 @@ public class RexseeSMS {
 
     public RexseeSMS(Context mContext) {
         this.mContext = mContext;
-        // TODO Auto-generated constructor stub
     }
 
     public static String[] SMS_COLUMNS = new String[]{

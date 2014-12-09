@@ -1,12 +1,14 @@
 package com.byod;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 
 import com.byod.bean.ContactBean;
+import com.byod.sms.service.SMSObserverService;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class BYODApplication extends Application {
 
@@ -44,6 +46,7 @@ public class BYODApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
+        startService(new Intent(this, SMSObserverService.class));
     }
 
 

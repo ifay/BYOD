@@ -80,7 +80,7 @@ public class ContactsAdapter extends BaseAdapter {
         holder.name.setText(cb.getDisplayName());
         holder.number.setText(cb.getPhoneNum());
         holder.qcb.assignContactUri(Contacts.getLookupUri(cb.getContactId(), cb.getLookUpKey()));
-        if (0 != cb.getPhotoId()) {
+        if (null != cb.getPhotoId() && 0 != cb.getPhotoId()) {
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, cb.getContactId());
             InputStream input = Contacts.openContactPhotoInputStream(ctx.getContentResolver(), uri);
             Bitmap contactPhoto = BitmapFactory.decodeStream(input);

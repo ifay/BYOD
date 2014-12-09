@@ -1,6 +1,8 @@
 package com.byod.contacts.data;
 
 import android.content.AsyncQueryHandler;
+import android.content.ContentValues;
+
 import com.byod.data.IAsyncQuery;
 
 public class OnlineContactsAsyncQuery implements IAsyncQuery{
@@ -11,5 +13,10 @@ public class OnlineContactsAsyncQuery implements IAsyncQuery{
     @Override
     public void startQuery() {
         // TODO
+    }
+
+    @Override
+    public void startInsert(ContentValues values) {
+
     }
 }

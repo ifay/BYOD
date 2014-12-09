@@ -2,40 +2,40 @@
 <resources>
     <style name="topbar_bg">
         <item name="android:gravity">center_vertical</item>
-        <item name="android:background">@drawable/top_bar_bg</item>
+        <item name="android:background">#50AFFF</item>
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">46.0dip</item>
+        <item name="android:layout_height">46dp</item>
         <item name="android:layout_alignParentTop">true</item>
     </style>
-    
+
     <style name="topbar_text">
 	    <item name="android:textSize">23sp</item>
 	    <item name="android:textStyle">bold</item>
-	    <item name="android:textColor">#ffffffff</item>
+	    <item name="android:textColor">#FFEEEEEE</item>
 	    <item name="android:layout_gravity">center</item>
 	    <item name="android:layout_width">wrap_content</item>
 	    <item name="android:layout_height">wrap_content</item>
-	    <item name="android:shadowColor">#40000000</item>
+	    <item name="android:shadowColor">#50000000</item>
 	    <item name="android:shadowDy">-2.0</item>
 	    <item name="android:shadowRadius">4.0</item>
 	    <item name="android:layout_centerInParent">true</item>
     </style>
-    
+
     <style name="topbar_btn">
-        <item name="android:textSize">14.0sp</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#FFEEEEEE</item>
         <item name="android:gravity">center</item>
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
         <item name="android:layout_centerInParent">true</item>
     </style>
     <style name="topbar_left_btn" parent="@style/topbar_btn">
-        <item name="android:layout_marginLeft">10.0dip</item>
+        <item name="android:layout_marginLeft">10dp</item>
         <item name="android:layout_alignParentLeft">true</item>
     </style>
-    
+
     <style name="topbar_right_btn" parent="@style/topbar_btn">
-        <item name="android:layout_marginRight">10.0dip</item>
+        <item name="android:layout_marginRight">10dip</item>
         <item name="android:layout_alignParentRight">true</item>
     </style>
 </resources>

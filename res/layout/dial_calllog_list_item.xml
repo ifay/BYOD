@@ -25,24 +25,24 @@
             android:layout_height="0dip"
             android:layout_weight="1"
             android:textAppearance="?android:textAppearanceMedium"
-            android:textColor="#ffffff" />
+            android:textColor="#FF000000" />
 
         <TextView
             android:id="@+id/number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceSmall"
-            android:textColor="#cccccc" />
+            android:textColor="#FF222222" />
     </LinearLayout>
 
     <ImageView
         android:id="@+id/call_btn"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
         android:background="@drawable/ic_calllog_call_btn" />
 
     <TextView
@@ -51,6 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toLeftOf="@+id/call_btn"
-        android:textColor="#ffffff" />
+        android:layout_marginLeft="5dp"
+        android:textColor="#FF000000" />
 
 </RelativeLayout>

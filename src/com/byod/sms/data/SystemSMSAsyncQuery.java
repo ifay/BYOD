@@ -1,4 +1,4 @@
-package com.byod.contacts.data;
+package com.byod.sms.data;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
@@ -7,13 +7,14 @@ import android.content.Context;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
+
 import com.byod.data.IAsyncQuery;
 import com.byod.data.MyAsyncQueryHandler;
 
-public class SystemContactsAsyncQuery implements IAsyncQuery{
+public class SystemSMSAsyncQuery implements IAsyncQuery{
     private final AsyncQueryHandler mAsyncQueryHandler;
     private final Context mContext;
-    public SystemContactsAsyncQuery(Context context, AsyncQueryHandler asyncQueryHandler) {
+    public SystemSMSAsyncQuery(Context context, AsyncQueryHandler asyncQueryHandler) {
         this.mContext = context.getApplicationContext();
         this.mAsyncQueryHandler = asyncQueryHandler;
     }

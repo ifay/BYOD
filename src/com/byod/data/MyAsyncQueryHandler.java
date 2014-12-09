@@ -19,7 +19,7 @@ public class MyAsyncQueryHandler extends AsyncQueryHandler{
     }
 
     @Override
-    protected void onDeleteComplete(int token, Object cookie, int result) {
+    public void onDeleteComplete(int token, Object cookie, int result) {
         mAsyncQueryHandler.onDeleteComplete(token, cookie, result);
     }
 
