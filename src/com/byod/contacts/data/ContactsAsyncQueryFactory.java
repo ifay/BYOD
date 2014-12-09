@@ -29,7 +29,7 @@ public class ContactsAsyncQueryFactory implements IAsyncQueryFactory {
 
     @Override
     public IAsyncQuery getLocalAsyncQuery() {
-        return new LocalContactsAsyncQuery(mAsyncQueryHandler);
+        return new LocalContactsAsyncQuery(mContext, mAsyncQueryHandler);
     }
 
     @Override

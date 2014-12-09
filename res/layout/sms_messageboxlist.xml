@@ -65,7 +65,8 @@
             android:gravity="left|top"
             android:hint="输入短信内容"
             android:maxLines="4"
-            android:padding="5dip" />
+            android:padding="5dip"
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/fasong"

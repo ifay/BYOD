@@ -2,11 +2,14 @@ package com.byod.contacts.data;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
 import com.byod.data.IAsyncQuery;
 import com.byod.data.db.ContactsContentProvider;
+import com.byod.sms.service.SMSObserverService;
 
 import static com.byod.data.db.DatabaseHelper.ContactsColumns.DISPLAY_NAME;
 import static com.byod.data.db.DatabaseHelper.ContactsColumns.LOOKUP_KEY;
@@ -15,8 +18,10 @@ import static com.byod.data.db.DatabaseHelper.ContactsColumns.SORT_KEY;
 
 public class LocalContactsAsyncQuery implements IAsyncQuery{
     private final AsyncQueryHandler mAsyncQueryHandler;
-    public LocalContactsAsyncQuery(AsyncQueryHandler asyncQueryHandler) {
+    private final Context mContext;
+    public LocalContactsAsyncQuery(Context context, AsyncQueryHandler asyncQueryHandler) {
         this.mAsyncQueryHandler = asyncQueryHandler;
+        this.mContext = context.getApplicationContext();
     }
     @Override
     public void startQuery() {
@@ -36,5 +41,7 @@ public class LocalContactsAsyncQuery implements IAsyncQuery{
     public void startInsert(ContentValues values) {
         Uri uri = ContactsContentProvider.CONTACTS_URI;
         mAsyncQueryHandler.startInsert(0, null, uri, values);
+        Intent intent = new Intent(SMSObserverService.ContactsChange.ACTION_CONTACTS_CHANGE);
+        mContext.sendBroadcast(intent);
     }
 }

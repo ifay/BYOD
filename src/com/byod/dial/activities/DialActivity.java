@@ -3,11 +3,8 @@ package com.byod.dial.activities;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -28,15 +25,15 @@ import android.widget.ListView;
 import com.byod.BYODApplication;
 import com.byod.R;
 import com.byod.bean.CallLogBean;
+import com.byod.data.db.ContactsContentProvider;
+import com.byod.data.db.DatabaseHelper;
 import com.byod.dial.adapter.DialAdapter;
 import com.byod.dial.adapter.T9Adapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DialActivity extends Activity implements OnClickListener {
 
@@ -53,9 +50,6 @@ public class DialActivity extends Activity implements OnClickListener {
 
     private Button phone_view;
     private Button delete;
-    private Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-    private SoundPool spool;
-    private AudioManager am = null;
 
     private BYODApplication application;
     private ListView listView;
@@ -81,22 +75,6 @@ public class DialActivity extends Activity implements OnClickListener {
                 dialPadShow();
             }
         });
-
-        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
-        spool = new SoundPool(11, AudioManager.STREAM_SYSTEM, 5);
-//		map.put(0, spool.load(this, R.raw.dtmf0, 0));
-//		map.put(1, spool.load(this, R.raw.dtmf1, 0));
-//		map.put(2, spool.load(this, R.raw.dtmf2, 0));
-//		map.put(3, spool.load(this, R.raw.dtmf3, 0));
-//		map.put(4, spool.load(this, R.raw.dtmf4, 0));
-//		map.put(5, spool.load(this, R.raw.dtmf5, 0));
-//		map.put(6, spool.load(this, R.raw.dtmf6, 0));
-//		map.put(7, spool.load(this, R.raw.dtmf7, 0));
-//		map.put(8, spool.load(this, R.raw.dtmf8, 0));
-//		map.put(9, spool.load(this, R.raw.dtmf9, 0));
-//		map.put(11, spool.load(this, R.raw.dtmf11, 0));
-//		map.put(12, spool.load(this, R.raw.dtmf12, 0));
 
         phone_view = (Button) findViewById(R.id.phone_view);
         phone_view.setOnClickListener(this);
@@ -181,7 +159,6 @@ public class DialActivity extends Activity implements OnClickListener {
 
 
     private class MyAsyncQueryHandler extends AsyncQueryHandler {
-
         public MyAsyncQueryHandler(ContentResolver cr) {
             super(cr);
         }
@@ -195,9 +172,12 @@ public class DialActivity extends Activity implements OnClickListener {
                 cursor.moveToFirst();
                 for (int i = 0; i < cursor.getCount(); i++) {
                     cursor.moveToPosition(i);
-                    date = new Date(cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)));
-//					String date = cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE));
                     String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+                    if (!isHaveNumber(number)) {
+                        continue;
+                    }
+
+                    date = new Date(cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)));
                     int type = cursor.getInt(cursor.getColumnIndex(CallLog.Calls.TYPE));
                     String cachedName = cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME));//缓存的名称与电话号码，如果它的存在
                     int id = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
@@ -261,74 +241,61 @@ public class DialActivity extends Activity implements OnClickListener {
         switch (v.getId()) {
             case R.id.dialNum0:
                 if (phone_view.getText().length() < 12) {
-                    play(1);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum1:
                 if (phone_view.getText().length() < 12) {
-                    play(1);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum2:
                 if (phone_view.getText().length() < 12) {
-                    play(2);
-
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum3:
                 if (phone_view.getText().length() < 12) {
-                    play(3);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum4:
                 if (phone_view.getText().length() < 12) {
-                    play(4);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum5:
                 if (phone_view.getText().length() < 12) {
-                    play(5);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum6:
                 if (phone_view.getText().length() < 12) {
-                    play(6);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum7:
                 if (phone_view.getText().length() < 12) {
-                    play(7);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum8:
                 if (phone_view.getText().length() < 12) {
-                    play(8);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialNum9:
                 if (phone_view.getText().length() < 12) {
-                    play(9);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialx:
                 if (phone_view.getText().length() < 12) {
-                    play(11);
                     input(v.getTag().toString());
                 }
                 break;
             case R.id.dialj:
                 if (phone_view.getText().length() < 12) {
-                    play(12);
                     input(v.getTag().toString());
                 }
                 break;
@@ -343,14 +310,6 @@ public class DialActivity extends Activity implements OnClickListener {
             default:
                 break;
         }
-    }
-
-    private void play(int id) {
-        int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        int current = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-
-        float value = (float) 0.7 / max * current;
-        spool.setVolume(spool.play(id, value, value, 0, 0, 1f), value, value);
     }
 
     private void input(String str) {
@@ -382,5 +341,19 @@ public class DialActivity extends Activity implements OnClickListener {
         }
     }
 
+    public boolean isHaveNumber(String number) {
+        number = number.replaceAll("\\s", "");
+        String[] projection = {DatabaseHelper.ContactsColumns.DISPLAY_NAME};
+        Cursor cursor = this.getContentResolver().query(
+                ContactsContentProvider.CONTACTS_URI,
+                projection,
+                DatabaseHelper.ContactsColumns.PHONE + " = '" + number + "'",
+                null,
+                null);
+        if (cursor == null || cursor.getCount() <= 0) {
+            return false;
+        }
 
+        return true;
+    }
 }

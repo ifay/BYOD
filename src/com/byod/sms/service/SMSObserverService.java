@@ -1,10 +1,13 @@
 package com.byod.sms.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,14 +18,13 @@ import android.util.Log;
 
 import com.byod.data.IAsyncQuery;
 import com.byod.data.IAsyncQueryFactory;
-import com.byod.data.IAsyncQueryHandler;
 import com.byod.data.db.ContactsContentProvider;
 import com.byod.sms.data.SMSAsyncQueryFactory;
 
 import static com.byod.data.db.DatabaseHelper.ContactsColumns;
 import static com.byod.data.db.DatabaseHelper.SMSColumns;
 
-public class SMSObserverService extends Service implements IAsyncQueryHandler {
+public class SMSObserverService extends Service {
     private static final String TAG = "SMSObserverService";
 
     private class SMSHandler extends Handler {
@@ -46,134 +48,95 @@ public class SMSObserverService extends Service implements IAsyncQueryHandler {
                 values.put(SMSColumns.READ, item.getRead());
                 values.put(SMSColumns.THREAD_ID, item.getThreadId());
 
-                IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
-                query.startInsert(values);
+                if (null == mAsyncQueryFactory) {
+                    mAsyncQueryFactory = new SMSAsyncQueryFactory(SMSObserverService.this, null);
+                    mAsyncQuery = mAsyncQueryFactory.getLocalAsyncQuery();
+                }
+                mAsyncQuery.startInsert(values);
             }
         }
     }
 
-    private static class SMSObserver extends ContentObserver {
+    private class SMSObserver extends ContentObserver {
         public static final String TAG = "SMSObserver";
 
-        private static final String[] PROJECTION = new String[]
-        {
-            SMSColumns._ID,//0
-            SMSColumns.TYPE,//1
-            SMSColumns.ADDRESS,//2
-            SMSColumns.BODY,//3
-            SMSColumns.DATE,//4
-            SMSColumns.THREAD_ID,//5
-            SMSColumns.READ,//6
-            SMSColumns.PROTOCOL//7
-        };
-
-//        private static final String SELECTION =
-//                SMSColumns._ID  + " > %s" +
-//                        " and (" + SMSColumns.TYPE + " = " + SMSColumns.MESSAGE_TYPE_INBOX +
-//                        " or " + SMSColumns.TYPE + " = " + SMSColumns.MESSAGE_TYPE_SENT + ")";
-
-        private static final int COLUMN_INDEX_ID    = 0;
-        private static final int COLUMN_INDEX_TYPE  = 1;
-        private static final int COLUMN_INDEX_PHONE = 2;
-        private static final int COLUMN_INDEX_BODY  = 3;
-        private static final int COLUMN_INDEX_DATE  = 4;
-        private static final int COLUMN_INDEX_THREAD_ID  = 5;
-        private static final int COLUMN_INDEX_READ  = 6;
-        private static final int COLUMN_INDEX_PROTOCOL = 7;
-
-        private static final int MAX_NUMS = 10;
-        private static int MAX_ID = 0;
-
-        private ContentResolver mResolver;
-        private Handler mHandler;
-
-        public SMSObserver(ContentResolver contentResolver, Handler handler)
-        {
+        /**
+         * Creates a content observer.
+         *
+         * @param handler The handler to run {@link #onChange} on, or null if none.
+         */
+        public SMSObserver(Handler handler) {
             super(handler);
-            this.mHandler = handler;
-            this.mResolver = contentResolver;
         }
 
         @Override
         public void onChange(boolean selfChange)
         {
-            Log.i(TAG, "onChange : " + selfChange + "; " + MAX_ID + "; ");
+            Log.d(TAG, "onChange : " + selfChange);
             super.onChange(selfChange);
+            doOnChange(false);
 
-            Cursor cursor = mResolver.query(ContactsContentProvider.SMS_CONTENT_URI, PROJECTION,
-                    null, null, null);
+        }
+    }
 
-            int id, type, protocol, thread_id, read;
-            long date;
-            String phone, body;
-            Message message;
-            MessageItem item;
-
-            int iter = 0;
-            boolean hasDone = false;
-
-            while (cursor.moveToNext())
-            {
-                id = cursor.getInt(COLUMN_INDEX_ID);
-                thread_id = cursor.getInt(COLUMN_INDEX_THREAD_ID);
-                date = cursor.getLong(COLUMN_INDEX_DATE);
-                read = cursor.getInt(COLUMN_INDEX_READ);
-                type = cursor.getInt(COLUMN_INDEX_TYPE);
-                phone = cursor.getString(COLUMN_INDEX_PHONE);
-                body = cursor.getString(COLUMN_INDEX_BODY);
-                protocol = cursor.getInt(COLUMN_INDEX_PROTOCOL);
-                Log.d(TAG, "smsID: " + id + " phone: " + phone + " body: " + body + " prot: " + protocol);
-                if (hasDone)
-                {
-                    MAX_ID = id;
-                    break;
-                }
-
-                if (body != null)
-                {
-                    hasDone = true;
-                    item = new MessageItem();
-                    item.setId(id);
-                    item.setType(type);
-                    item.setPhone(phone);
-                    item.setBody(body);
-                    item.setProtocol(protocol);
-                    item.setThreadId(thread_id);
-                    item.setDate(date);
-                    item.setRead(read);
-
-                    message = new Message();
-                    message.obj = item;
-                    mHandler.sendMessage(message);
-                } else {
-                    if (id > MAX_ID) MAX_ID = id;
-                }
-                if (iter > MAX_NUMS) break;
-                iter ++;
+    public class ContactsChange extends BroadcastReceiver {
+        public static final String ACTION_CONTACTS_CHANGE = "action_contacts_change";
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTION_CONTACTS_CHANGE.equals(intent.getAction())) {
+                doOnChange(true);
             }
         }
     }
 
+    private static final String[] PROJECTION = new String[]
+        {
+                SMSColumns._ID,//0
+                SMSColumns.TYPE,//1
+                SMSColumns.ADDRESS,//2
+                SMSColumns.BODY,//3
+                SMSColumns.DATE,//4
+                SMSColumns.THREAD_ID,//5
+                SMSColumns.READ,//6
+                SMSColumns.PROTOCOL//7
+        };
+
+    private static final int COLUMN_INDEX_ID    = 0;
+    private static final int COLUMN_INDEX_TYPE  = 1;
+    private static final int COLUMN_INDEX_PHONE = 2;
+    private static final int COLUMN_INDEX_BODY  = 3;
+    private static final int COLUMN_INDEX_DATE  = 4;
+    private static final int COLUMN_INDEX_THREAD_ID  = 5;
+    private static final int COLUMN_INDEX_READ  = 6;
+    private static final int COLUMN_INDEX_PROTOCOL = 7;
+
     private ContentObserver mObserver;
     private Handler mHandler = new SMSHandler();
     private IAsyncQueryFactory mAsyncQueryFactory;
+    private IAsyncQuery mAsyncQuery;
+    private BroadcastReceiver mContactsChange;
 
     @Override
     public void onCreate() {
         addSMSObserver();
-        mAsyncQueryFactory = new SMSAsyncQueryFactory(this, this);
+
+        if (null == mContactsChange) {
+            mContactsChange = new ContactsChange();
+            registerReceiver(mContactsChange, new IntentFilter(ContactsChange.ACTION_CONTACTS_CHANGE));
+        }
     }
 
     public void addSMSObserver()
     {
         Log.i(TAG, "add a SMS observer. ");
         ContentResolver resolver = getContentResolver();
-        mObserver = new SMSObserver(resolver, mHandler);
-        resolver.registerContentObserver(ContactsContentProvider.SMS_CONTENT_URI, true, mObserver);
+        if (null == mObserver) {
+            mObserver = new SMSObserver(mHandler);
+            resolver.registerContentObserver(ContactsContentProvider.SMS_CONTENT_URI, true, mObserver);
+        }
     }
 
     @Override
-
     public IBinder onBind(Intent intent)
     {
         return null;
@@ -183,32 +146,67 @@ public class SMSObserverService extends Service implements IAsyncQueryHandler {
     public void onDestroy()
     {
         Log.i(TAG, "onDestroy().");
-        this.getContentResolver().unregisterContentObserver(mObserver);
+        if (null != mObserver) {
+            this.getContentResolver().unregisterContentObserver(mObserver);
+        }
+        if (null != mContactsChange) {
+            unregisterReceiver(mContactsChange);
+        }
         super.onDestroy();
     }
 
-    @Override
-    public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+    private void doOnChange(boolean all) {
+        Cursor cursor = getContentResolver().query(ContactsContentProvider.SMS_CONTENT_URI, PROJECTION,
+                null, null, null);
 
-    }
+        int id, type, protocol, thread_id, read;
+        long date;
+        String phone, body;
+        Message message;
+        MessageItem item;
 
-    @Override
-    public void onDeleteComplete(int token, Object cookie, int result) {
+        boolean hasOne = false;
 
-    }
+        while (cursor.moveToNext())
+        {
+            id = cursor.getInt(COLUMN_INDEX_ID);
+            if (!all && hasOne)
+            {
+                break;
+            }
 
-    @Override
-    public void onUpdateComplete(int token, Object cookie, int result) {
+            thread_id = cursor.getInt(COLUMN_INDEX_THREAD_ID);
+            date = cursor.getLong(COLUMN_INDEX_DATE);
+            read = cursor.getInt(COLUMN_INDEX_READ);
+            type = cursor.getInt(COLUMN_INDEX_TYPE);
+            phone = cursor.getString(COLUMN_INDEX_PHONE);
+            body = cursor.getString(COLUMN_INDEX_BODY);
+            protocol = cursor.getInt(COLUMN_INDEX_PROTOCOL);
+            Log.d(TAG, "smsID: " + id + " phone: " + phone + " body: " + body + " protocol: " + protocol);
 
-    }
+            if (body != null)
+            {
+                hasOne = true;
+                item = new MessageItem();
+                item.setId(id);
+                item.setType(type);
+                item.setPhone(phone);
+                item.setBody(body);
+                item.setProtocol(protocol);
+                item.setThreadId(thread_id);
+                item.setDate(date);
+                item.setRead(read);
 
-    @Override
-    public void onInsertComplete(int token, Object cookie, Uri uri) {
-
+                message = new Message();
+                message.obj = item;
+                mHandler.sendMessage(message);
+            }
+        }
     }
 
     public boolean isHaveNumber(String number) {
-        String[] projection = {ContactsColumns.DISPLAY_NAME,};
+        number = number.replaceAll("\\s", "");
+        String[] projection = {ContactsColumns.DISPLAY_NAME};
         Cursor cursor = this.getContentResolver().query(
                 ContactsContentProvider.CONTACTS_URI,
                 projection,

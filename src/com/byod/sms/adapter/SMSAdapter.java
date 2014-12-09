@@ -91,6 +91,7 @@ public class SMSAdapter extends BaseAdapter {
     }
 
     public String getPersonName(String number) {
+        number = number.replaceAll("\\s", "");
         String[] projection = {DatabaseHelper.ContactsColumns.DISPLAY_NAME,};
         Cursor cursor = this.context.getContentResolver().query(
                 ContactsContentProvider.CONTACTS_URI,

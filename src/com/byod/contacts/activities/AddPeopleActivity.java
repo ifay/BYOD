@@ -62,8 +62,8 @@ public class AddPeopleActivity extends Activity implements  IAsyncQueryHandler{
                 } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
                     values.put(ContactsColumns.SORT_KEY, mName.getEditableText().toString());
                 }
-                values.put(ContactsColumns.PHONE, mNumber.getEditableText().toString());
-                values.put(ContactsColumns.EMAIL, mEmail.getEditableText().toString());
+                values.put(ContactsColumns.PHONE, mNumber.getEditableText().toString().replaceAll("\\s", ""));
+                values.put(ContactsColumns.EMAIL, mEmail.getEditableText().toString().replaceAll("\\s", ""));
 
                 IAsyncQuery query = mAsyncQueryFactory.getLocalAsyncQuery();
                 query.startInsert(values);
