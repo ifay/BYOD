@@ -20,6 +20,7 @@ import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
 import com.byod.utils.PolicyUtils;
+import com.byod.utils.RightUtil;
 
 /**
  * @author ifay 
@@ -144,8 +145,10 @@ public class DeviceRegisterActivity extends Activity {
         public void onClick(View v) {
             userAccount = userAccountET.getText().toString().trim();
             userPwd = pwdET.getText().toString().trim();
+            userPwd = RightUtil.encrypt(userPwd);////////
+            //TODO 如果用random Keyboard不需要这样处理
             if (userAccount.length() == 0 || userPwd.length() == 0) {
-                Toast.makeText(mActivity, "用户名或密码为空！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "密码为空！", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -281,7 +284,7 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    //keyboard
+    //keyboard////////////send userAccount to server and get random keyboard
     View.OnTouchListener showKeyboard = new View.OnTouchListener() {
 
         @Override
@@ -291,7 +294,20 @@ public class DeviceRegisterActivity extends Activity {
             if (keyboard == null) {
                 keyboard = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
-            keyboard.showKeyboard();
+            keyboard.showKeyboard();///////// comment on this line
+            ////////use keyboard from server
+            /*
+            String userAccount = userAccountET.getText().toString();
+            if (userAccount == null || userAccount.length() < 1) {
+                Toast.makeText(mActivity, "请输入用户名", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            try {
+                keyboard.getRandomKeyboard(userAccount.trim());
+            } catch (Exception e) {
+                Toast.makeText(mActivity, "键盘加载失败，请重试", Toast.LENGTH_SHORT).show();
+            }
+            */
             ((EditText)v).setInputType(inputType);
             return false;
         }

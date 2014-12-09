@@ -220,7 +220,7 @@ public class KeyboardUtil {
     
     /**
      * 从服务器获取数据JSON格式
-     * {"KBID":"","label":["1":"49".....],"code":[]}
+     * {"KBID":"","label":["1":"49".....]}
      * @return
      * @throws Exception
      */
@@ -250,6 +250,7 @@ public class KeyboardUtil {
     
     /**
      * 根据服务器传回的键盘布局数据 解析显示。
+     * 只对label进行了随机化，codes固定
      * @param keyboardJson
      * 返回值是什么？
      */
@@ -260,18 +261,15 @@ public class KeyboardUtil {
         }
 
         JSONArray labelArr;
-        JSONArray codeArr;
 
         try {
             JSONObject keyboard = new JSONObject(keyboardJson);
             sKbID = keyboard.getString("KBID");
             labelArr = keyboard.getJSONArray("label");
-            codeArr = keyboard.getJSONArray("code");
 
             List<Key> keyList = kChar.getKeys();
             for(int i = 0 ; i < keyList.size() ; i++) {
                 keyList.get(i).label = (CharSequence)labelArr.getString(i);
-                keyList.get(i).codes[0] = Integer.parseInt(codeArr.getString(i).trim());
             }
             //2. show
             keyboardView.setKeyboard(kChar);

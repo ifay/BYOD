@@ -81,13 +81,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public static final String TYPE = Calls.TYPE;
         public static final String CACHED_NAME = Calls.CACHED_NAME;
         public static final String DURATION = Calls.DURATION;
-        public static final String COUNTRY_ISO = Calls.COUNTRY_ISO;
-        public static final String GEOCODED_LOCATION = Calls.GEOCODED_LOCATION;
+        //public static final String COUNTRY_ISO = Calls.COUNTRY_ISO;
+        public static final String COUNTRY_ISO = "countryiso";
+        //public static final String GEOCODED_LOCATION = Calls.GEOCODED_LOCATION;
+        public static final String GEOCODED_LOCATION = "geocoded_location";
         public static final String CACHED_NUMBER_TYPE = Calls.CACHED_NUMBER_TYPE;
         public static final String CACHED_NUMBER_LABEL = Calls.CACHED_NUMBER_LABEL;
-        public static final String CACHED_LOOKUP_URI = Calls.CACHED_LOOKUP_URI;
-        public static final String CACHED_PHOTO_ID = Calls.CACHED_PHOTO_ID;
-        public static final String CACHED_FORMATTED_NUMBER = Calls.CACHED_FORMATTED_NUMBER;
+        //public static final String CACHED_LOOKUP_URI = Calls.CACHED_LOOKUP_URI;
+        public static final String CACHED_LOOKUP_URI = "lookup_uri";
+        //public static final String CACHED_PHOTO_ID = Calls.CACHED_PHOTO_ID;
+        public static final String CACHED_PHOTO_ID = "photo_id";
+        //public static final String CACHED_FORMATTED_NUMBER = Calls.CACHED_FORMATTED_NUMBER;
+        public static final String CACHED_FORMATTED_NUMBER = "formatted_number";
         public static final String IS_READ = Calls.IS_READ;
     }
 
