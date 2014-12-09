@@ -32,7 +32,8 @@
             android:layout_height="54dp"
             android:layout_marginTop="10dp"
             android:layout_weight="1"
-            android:hint="姓名"/>
+            android:hint="姓名"
+            android:inputType="textPersonName" />
         <ImageView
             android:id="@+id/icon"
             android:layout_width="72dp"
@@ -48,14 +49,16 @@
         android:layout_height="54dp"
         android:hint="电话"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="110dp"/>
+        android:layout_marginRight="110dp"
+        android:inputType="phone" />
     <EditText
         android:id="@+id/email"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:hint="电子邮件"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="110dp"/>
+        android:layout_marginRight="110dp"
+        android:inputType="textEmailAddress" />
 
     <Button
         android:id="@+id/add"

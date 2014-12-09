@@ -200,6 +200,7 @@ public class MessageBoxList extends Activity implements IAsyncQueryHandler {
     }
 
     public String getPersonName(String number) {
+        number = number.replaceAll("\\s", "");
         String[] projection = {ContactsColumns.DISPLAY_NAME,};
         Cursor cursor = this.getContentResolver().query(
                 ContactsContentProvider.CONTACTS_URI,

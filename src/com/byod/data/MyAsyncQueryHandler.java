@@ -15,21 +15,29 @@ public class MyAsyncQueryHandler extends AsyncQueryHandler{
 
     @Override
     protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-        mAsyncQueryHandler.onQueryComplete(token, cookie, cursor);
+        if (null != mAsyncQueryHandler) {
+            mAsyncQueryHandler.onQueryComplete(token, cookie, cursor);
+        }
     }
 
     @Override
     public void onDeleteComplete(int token, Object cookie, int result) {
-        mAsyncQueryHandler.onDeleteComplete(token, cookie, result);
+        if (null != mAsyncQueryHandler) {
+            mAsyncQueryHandler.onDeleteComplete(token, cookie, result);
+        }
     }
 
     @Override
     protected void onUpdateComplete(int token, Object cookie, int result) {
-        mAsyncQueryHandler.onUpdateComplete(token, cookie, result);
+        if (null != mAsyncQueryHandler) {
+            mAsyncQueryHandler.onUpdateComplete(token, cookie, result);
+        }
     }
 
     @Override
     protected void onInsertComplete(int token, Object cookie, Uri uri) {
-        mAsyncQueryHandler.onInsertComplete(token, cookie, uri);
+        if (null != mAsyncQueryHandler) {
+            mAsyncQueryHandler.onInsertComplete(token, cookie, uri);
+        }
     }
 }
