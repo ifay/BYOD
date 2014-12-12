@@ -143,6 +143,31 @@ public class PolicyUtils {
             throw e;
         }
     }
+    /**
+     * 本方法需要连接网络，不要直接使用\
+     * 从服务器请求策略是否有更新，若有，则同步下来，解析json，写到本地的sharedPreference中
+     *
+     * @throws Exception 
+     */
+    public static void getDevicePolicyByUser(Context context,String userAccount) throws Exception {
+        try {
+                PropertyInfo[] property = new PropertyInfo[1];
+                property[0] = new PropertyInfo();
+                property[0].setName("userAccount");
+                property[0].setValue(userAccount);
+                property[0].setType(PropertyInfo.STRING_CLASS);
+                WebConnectCallable task = new WebConnectCallable(CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "getUserPolicy", property);
+                if (pool == null) {
+                    pool = Executors.newCachedThreadPool();
+                }
+                Future<String> future = pool.submit(task);
+                String policyJson = future.get();
+                //parase and store policyJson
+                paraseAndSavePolicy(context,policyJson);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 
     /**
      * 根据Pref中的值进行安全策略检测
@@ -152,8 +177,8 @@ public class PolicyUtils {
     public static String checkPolicy(Context context) {
         Log.d(TAG,"checkPolicy");
         //PREF_DEVICE_ACCESS_START_TIME
-        int startTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_START_TIME, -1);
-        int endTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_END_TIME, -1);
+        int startTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_START_TIME, 0);
+        int endTime = CommonUtils.getPrefInt(context, PREF_DEVICE_ACCESS_END_TIME, 24);
         int curHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         if (curHour < startTime ) {
             return PREF_DEVICE_ACCESS_START_TIME;
@@ -166,20 +191,24 @@ public class PolicyUtils {
             return PREF_DEVICE_MIN_VERSION;
         }
         //PREF_DEVICE_ROOT_SUPPORT
-        boolean isRoot = CommonUtils.getPrefBoolean(context, PREF_DEVICE_ROOT_SUPPORT, false);//默认不允许root
-        if (DeviceUtils.isRooted() != isRoot) {
-            return PREF_DEVICE_ROOT_SUPPORT;
+        boolean supportRoot = CommonUtils.getPrefBoolean(context, PREF_DEVICE_ROOT_SUPPORT, false);//默认不允许root
+        if (!supportRoot) {  //允许root
+            if (DeviceUtils.isRooted() == false) {
+                return PREF_DEVICE_ROOT_SUPPORT;
+            }
         }
         //PREF_DEVICE_WIFI_ENABLE
-        boolean isWifiEnabled = CommonUtils.getPrefBoolean(context, PREF_DEVICE_BLUETOOTH_ENABLE, true);//注意：默认不应该允许开Wifi，但是为了测试，需要打开
+        boolean isWifiEnabled = CommonUtils.getPrefBoolean(context, PREF_DEVICE_WIFI_ENABLE, true);//注意：默认不应该允许开Wifi，但是为了测试，需要打开
         if (DeviceUtils.isWifiEnabled(context) != isWifiEnabled) {
             return PREF_DEVICE_WIFI_ENABLE;
         }
         
         //PREF_DEVICE_GPRS_ENABLE
         boolean isGPRSEnabled = CommonUtils.getPrefBoolean(context, PREF_DEVICE_GPRS_ENABLE, true);//默认为true
-        if (DeviceUtils.isGPRSEnabled(context) != isGPRSEnabled) {
-            return PREF_DEVICE_GPRS_ENABLE;
+        if ( isGPRSEnabled == false){
+            if (DeviceUtils.isGPRSEnabled(context) != isGPRSEnabled) {
+                return PREF_DEVICE_GPRS_ENABLE;
+                }
         }
         
         //PREF_DEVICE_BLUETOOTH_ENABLE
@@ -191,12 +220,16 @@ public class PolicyUtils {
     }
 
 
+    /*
+     * 根据JSON解析策略为pref存储于本地
+     */
     private static void paraseAndSavePolicy(Context context, String policyString) {
         try {
+            Log.d(TAG,"policyString:"+policyString);
             JSONObject policyJson = new JSONObject(policyString);
             Log.d(TAG,"string to JSON:"+policyJson.toString());
             //update policy time first
-            Long createTime = Long.parseLong(policyJson.getString("CREATETIME"));
+            Long createTime = Long.parseLong(policyJson.getString("CREATETIME").trim());
             CommonUtils.setPrefLong(context, PREF_DEVICE_POLICY_TIME, createTime);
             //store in Preferences
             CommonUtils.setPrefBoolean(context, PREF_DEVICE_ROOT_SUPPORT, policyJson.getString(PREF_DEVICE_ROOT_SUPPORT).trim().equals("1"));
@@ -207,7 +240,6 @@ public class PolicyUtils {
             CommonUtils.setPrefInt(context, PREF_DEVICE_ONLINE_MAX, Integer.parseInt(policyJson.getString(PREF_DEVICE_ONLINE_MAX).trim()));
             CommonUtils.setPrefInt(context, PREF_DEVICE_ACCESS_START_TIME, Integer.parseInt(policyJson.getString(PREF_DEVICE_ACCESS_START_TIME).trim()));
             CommonUtils.setPrefInt(context, PREF_DEVICE_ACCESS_END_TIME, Integer.parseInt(policyJson.getString(PREF_DEVICE_ACCESS_END_TIME).trim()));
-//            return checkPolicy(context);
         } catch (JSONException e) {
             e.printStackTrace();
 //            return "服务器数据解析失败";
@@ -222,7 +254,6 @@ public class PolicyUtils {
     }
 
     /**
-     * TODO
      * 检测本地策略是否为最新
      *
      * @return
@@ -276,14 +307,5 @@ public class PolicyUtils {
         SharedPreferences prefs = CommonUtils.initSharedPreferences(cxt);
         return prefs.getLong(PREF_DEVICE_POLICY_TIME, defValue);
     }
-
-    /**
-     * delete all local policy data
-     */
-    public static void deleteLocalPolicy(Context ctx) {
-        SharedPreferences prefs = CommonUtils.initSharedPreferences(ctx);
-        prefs.edit().clear().commit();
-    }
-
 
 }

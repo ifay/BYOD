@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.JSONStringer;
 import org.ksoap2.serialization.PropertyInfo;
 
@@ -98,17 +99,18 @@ public class DeviceUtils {
      * SHA1方法计算DeviceID
      */
     public String getsDeviceIdSHA1() {
-        if (sDeviceID == null || sDeviceID.length() < 1) { 
-            Log.d(TAG,"IMEI"+IMEI);
-            Log.d(TAG,"IMSI"+IMSI);
-            Log.d(TAG,"TEL"+TEL);
-            Log.d(TAG,"WLAN_MAC"+WLAN_MAC);
-            Log.d(TAG,"BLUETOOTH_MAC"+BLUETOOTH_MAC);
-            String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
-            longID.replaceAll(":", "");
-            Log.d(TAG,"longID"+longID);
-            sDeviceID = CommonUtils.cryptSH1(longID);
-        }
+//        if (sDeviceID == null || sDeviceID.length() < 1) { 
+//            Log.d(TAG,"IMEI"+IMEI);
+//            Log.d(TAG,"IMSI"+IMSI);
+//            Log.d(TAG,"TEL"+TEL);
+//            Log.d(TAG,"WLAN_MAC"+WLAN_MAC);
+//            Log.d(TAG,"BLUETOOTH_MAC"+BLUETOOTH_MAC);
+//            String longID = IMEI + IMSI + TEL + WLAN_MAC + BLUETOOTH_MAC;
+//            longID.replaceAll(":", "");
+//            Log.d(TAG,"longID"+longID);
+//            sDeviceID = CommonUtils.cryptSH1(longID);
+//        }
+        sDeviceID = PseudoID;
         return sDeviceID;
     }
 
@@ -258,17 +260,20 @@ public class DeviceUtils {
         }
     }
     
-    public JSONStringer generateDeviceJSON (Context context, boolean isFirst) {
+    public JSONStringer generateDeviceJSON (Context context, boolean isFirst, String userAccount) {
         LocationUtils location = new LocationUtils(context);
         JSONStringer deviceJson = new JSONStringer();
         try {
             deviceJson.object();
             deviceJson.key("deviceid");
-            deviceJson.value(sDeviceID);
+//            deviceJson.value(getsDeviceIdSHA1());
+            deviceJson.value(getPseudoID());
             deviceJson.key("useraccount");
-            deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
+            deviceJson.value(userAccount);///TODO
             deviceJson.key("devicename");
             deviceJson.value(sDeviceManufacturer);
+            deviceJson.key("devicetype");
+            deviceJson.value("1");  //1手机
             deviceJson.key("deviceos");
             deviceJson.value(2000);//Android
             deviceJson.key("devicemac");
@@ -279,7 +284,7 @@ public class DeviceUtils {
             deviceJson.value(0);
             deviceJson.key("deviceisdel");
             deviceJson.value(0);
-            deviceJson.key("deviceInitTime");
+            deviceJson.key("deviceinittime");
             Date date = new Date();
             deviceJson.value(date.getTime()); //TODO 日期格式 long型
             deviceJson.key("devicevalidperiod");
@@ -290,9 +295,9 @@ public class DeviceUtils {
             deviceJson.value(isFirst? 1: 0); //第一台设备不做peer校验，直接注册
             deviceJson.key("deviceislogout");
             deviceJson.value(0);
-            deviceJson.key("deviceEaster");
-            deviceJson.value(CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, "admin"));
-            deviceJson.key("bakStr1");
+            deviceJson.key("deviceeaster");
+            deviceJson.value(userAccount);
+            deviceJson.key("bakstr1");
             deviceJson.value(location.getLocation());//TODO 目前是经度+空格+纬度
             deviceJson.endObject();
             Log.d(TAG,"JSON-----"+deviceJson.toString());
@@ -306,9 +311,9 @@ public class DeviceUtils {
      * @return
      * @throws Exception 
      */
-    public boolean registerDevice(Context context, boolean isFirst) throws Exception {
+    public boolean registerDevice(Context context, boolean isFirst,String userAccount) throws Exception {
         //send device info to the server
-        String deviceJson = generateDeviceJSON(context,isFirst).toString();
+        String deviceJson = generateDeviceJSON(context,isFirst,userAccount).toString();
         if (deviceJson.length() == 0) { //Device info generate fail
             return CommonUtils.FAIL;
         }
@@ -318,7 +323,7 @@ public class DeviceUtils {
         propertyInfo[0].setValue(deviceJson);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceLocked", propertyInfo);
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "deviceRegister", propertyInfo);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
@@ -340,12 +345,12 @@ public class DeviceUtils {
      * @return
      * @throws Exception 
      */
-    public static String[] queryPeerDevices(String deviceID) throws Exception {
+    public static String[] queryPeerDevices() throws Exception {
         // TODO query server use thread
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
         propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
-        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setValue(PseudoID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
                 CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "queryPeerDevices", propertyInfo);
@@ -355,17 +360,21 @@ public class DeviceUtils {
         Future<String> future = pool.submit(task);
         try {
             String result = future.get();
-//            return result;
-            //服务器用JSON返回信息///////////WebServiceImpl
-            // 返回 deviceid，devicename
+            if (result == null) {
+                return null;
+            }
+            JSONObject resultJson = new JSONObject(result);
+            String[] resultSet = new String[]{"",""};
+            resultSet[0] = resultJson.getString("DEVICEID");
+            resultSet[1] = resultJson.getString("DEVICENAME");
+            return resultSet;
         } catch (InterruptedException e) {
             throw e;
         } catch (ExecutionException e) {
             throw e;
+        } catch (Exception e) {
+            throw e;
         }
-        return new String[]{
-                "deviceID","deviceName"
-        };
     }
 
     /**
@@ -374,11 +383,11 @@ public class DeviceUtils {
      * @param deviceID
      * @throws Exception 
      */
-    public static boolean approveDevice(String deviceID) throws Exception {
+    public static boolean approvePeerDevice(String deviceID) throws Exception {
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
         propertyInfo[0] = new PropertyInfo();
         propertyInfo[0].setName("deviceID");
-        propertyInfo[0].setValue(sDeviceID);
+        propertyInfo[0].setValue(deviceID);
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
                 CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "setDeviceActive", propertyInfo);
@@ -402,7 +411,7 @@ public class DeviceUtils {
      * @return 
      * @throws Exception
      */
-    public boolean checkRegRequestApproved() throws Exception {
+    public int checkRegRequestApproved() throws Exception {
         String deviceID = getsDeviceIdSHA1();
         PropertyInfo[] propertyInfo = new PropertyInfo[1];
         propertyInfo[0] = new PropertyInfo();
@@ -411,6 +420,33 @@ public class DeviceUtils {
         propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
                 CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceActive", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return Integer.parseInt(result);
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
+    }
+    
+    /**
+     * 不允许设备注册
+     * delete device 对应的userID字段
+     * @param deviceID
+     */
+    public static boolean disapproveDevice(String deviceID) throws Exception {
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(deviceID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "disapproveDeviceRegister", propertyInfo);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
@@ -426,16 +462,32 @@ public class DeviceUtils {
     }
     
     /**
-     * 不允许设备注册
-     * delete device 对应的userID字段
-     * @param deviceID
+     * 查询设备是否注册过 device记录存在，且isActive
+     * @return
      */
-    public static boolean disapproveDevice(String deviceID) {
-        // TODO do nothing? or setDeviceIsDeleted?
-        return CommonUtils.SUCCESS;
-        
+    public boolean isDeviceRegistered() throws Exception {
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(getsDeviceIdSHA1());
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceRegistered", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
     }
 
+    
     public static int getAPIVersion() {
         Log.d(TAG,"API version:"+Build.VERSION.SDK_INT);
         return Build.VERSION.SDK_INT;
@@ -448,6 +500,7 @@ public class DeviceUtils {
 
     public static boolean isGPRSEnabled(Context context) {
         ConnectivityManager connectMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Log.d(TAG,"gprs:"+connectMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isAvailable());
         return connectMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isAvailable();
     }
 
@@ -456,6 +509,7 @@ public class DeviceUtils {
         ConnectivityManager connectMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return connectMgr.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH).isAvailable();
     }
+
 
     
     

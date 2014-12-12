@@ -17,9 +17,9 @@ public class AuthUtils {
      * @param userAccount
      * @param pwd
      * @param deviceID
-     * @return success，fail
+     * @return success 1，fail 0， userNotExist -1
      */
-    public static boolean login(String userAccount, String pwd, String deviceID) {
+    public static int login(String userAccount, String pwd, String deviceID) {
         PropertyInfo[] properties = new PropertyInfo[3];
         properties[0] = new PropertyInfo();
         properties[0].setName("userAccount");
@@ -34,20 +34,20 @@ public class AuthUtils {
         properties[2].setValue(deviceID);
         properties[2].setType(PropertyInfo.STRING_CLASS);
         WebConnectCallable task = new WebConnectCallable(
-                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "login2", properties);
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "loginWithRandomKeyboard2", properties);
         if (pool == null) {
             pool = Executors.newCachedThreadPool();
         }
         Future<String> future = pool.submit(task);
         try {
             String result = future.get();
-            return result.equals("true");
+            return Integer.parseInt(result.trim());
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return CommonUtils.FAIL;
+            return 0;
         } catch (ExecutionException e) {
             e.printStackTrace();
-            return CommonUtils.FAIL;
+            return 0;
         }
     }
 

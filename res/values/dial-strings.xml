@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="dialActivityLabel">BYOD-拨号</string>
+    <string name="dialActivityLabel">BYOD拨号</string>
     <string name="dial">拨号</string>
 </resources>

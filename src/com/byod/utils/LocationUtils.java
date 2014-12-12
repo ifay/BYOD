@@ -29,6 +29,7 @@ public class LocationUtils implements LocationListener{
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();
         longitude = location.getLongitude();
+        Log.d(TAG,"latitude:"+latitude+" longitude:"+longitude);
     }
 
     /**
@@ -36,6 +37,9 @@ public class LocationUtils implements LocationListener{
      * @return latitude[space]longitude
      */
     public String getLocation() {
+        if (latitude == null || longitude == null) {
+            return "";
+        }
         String loc = latitude.toString()+" "+longitude.toString();
         Log.d(TAG,"location is:"+loc);
         return loc;

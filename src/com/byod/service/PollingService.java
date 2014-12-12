@@ -28,8 +28,6 @@ public class PollingService extends Service {
     private Notification mNotification;
     private NotificationManager mManager;
     
-    private String deviceID = null;
-
     /*
      * (non-Javadoc)
      * @see android.app.Service#onBind(android.content.Intent)
@@ -47,8 +45,8 @@ public class PollingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        deviceID = intent.getExtras().getString("DeviceID");
-        Log.d(TAG, "getIntent deviceID is:"+deviceID);
+//        deviceID = intent.getExtras().getString("DeviceID");
+//        Log.d(TAG, "getIntent deviceID is:"+deviceID);
         new PollingThread().start();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -90,7 +88,7 @@ public class PollingService extends Service {
             //向server查询是否有peer device,返回devieID，deviceName | null
             String[] peerInfo = null;
             try {
-                peerInfo = DeviceUtils.queryPeerDevices(deviceID);
+                peerInfo = DeviceUtils.queryPeerDevices();
                 if (peerInfo != null) {
                     showPeerDeviceNotification(peerInfo);
                 }
