@@ -31,6 +31,7 @@ public class BYODApplication extends Application {
     }
 
     // 遍历所有Activity并finish
+    // 退出应用：清除缓存
     public void exit() {
         for (Activity activity : activityList) {
             activity.finish();

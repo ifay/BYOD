@@ -197,6 +197,10 @@ public class DialActivity extends Activity implements OnClickListener {
                 if (list.size() > 0) {
                     setAdapter(list);
                 }
+                //TODO close cursor?
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
             }
         }
 
@@ -342,6 +346,7 @@ public class DialActivity extends Activity implements OnClickListener {
     }
 
     public boolean isHaveNumber(String number) {
+        boolean result = false;
         number = number.replaceAll("\\s", "");
         String[] projection = {DatabaseHelper.ContactsColumns.DISPLAY_NAME};
         Cursor cursor = this.getContentResolver().query(
@@ -350,10 +355,12 @@ public class DialActivity extends Activity implements OnClickListener {
                 DatabaseHelper.ContactsColumns.PHONE + " = '" + number + "'",
                 null,
                 null);
-        if (cursor == null || cursor.getCount() <= 0) {
-            return false;
+        if (cursor != null && cursor.getCount() > 0) {
+            result = true;
+        } 
+        if (cursor != null && !cursor.isClosed()) {
+            cursor.close();
         }
-
-        return true;
+        return result;
     }
 }
