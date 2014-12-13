@@ -1,10 +1,21 @@
 
 package com.byod.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class RightUtil {
 
+    private static Character[] elements = {'0','1','2','3','4','5','6','7','8','9',
+        'q','w','e','r','t','y','u','i','o','p',
+        'a','s','d','f','g','h','j','k','l',
+        'z','x','c','v','b','n','m'};
+    
+    private static List<Character> codes = new ArrayList(Arrays.asList(elements));
+    
     private static int ikey = 928;
 
     private static int iinc = 345;
@@ -42,4 +53,41 @@ public class RightUtil {
         }
         return password;
     }
+    
+    /*
+     * 根据kbID对密码进行翻译
+     * kbID：随机键盘标识，包含了请求时间
+     * TODO 参数待改
+     */
+    public static String translatePassword(String srcPwd, String labelArr) {
+        StringBuilder desPwd = new StringBuilder();
+        char[] src = srcPwd.toCharArray();
+        int index;
+        for (char c : src) {
+            //根据c在labelArr中的位置i，查找codelist的值，拼接
+            index = codes.indexOf(c);
+            desPwd.append(labelArr.charAt(index));
+            
+        }
+        return desPwd.toString();
+    }
+
+
+    /**
+     * 随机化字符串
+     * @param src
+     * @return
+     */
+    public static String random(String src) {
+        String[] srcList = src.split("");
+        List<String> list = Arrays.asList(srcList);
+        Collections.shuffle(list);
+        StringBuilder result = new StringBuilder();
+        for (String i : list) {
+            result.append(i);
+        }
+        return result.toString();
+    }
+
+
 }

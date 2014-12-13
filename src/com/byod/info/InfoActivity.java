@@ -41,6 +41,7 @@ public class InfoActivity extends Activity{
         Log.d(TAG, "onCreate");
         setContentView(R.layout.app_info);
         String userAccount = CommonUtils.getPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, "");
+        String password = CommonUtils.getPrefString(mActivity, CommonUtils.PREF_KEY_PASSWORD, "");
         Log.d(TAG, "userAccount"+userAccount);
         if (userAccount == null || userAccount.length() < 1) {
             //未登录
@@ -48,8 +49,8 @@ public class InfoActivity extends Activity{
             Intent i = new Intent(mActivity, AuthenticateActivity.class);
             startActivity(i);
         }
-        //url = url+"?userid="+userAccount+"&password=yyf123456"; //TODO
-        url = url+"?userid="+"xiaowang"+"&password=yyf123456"; //TODO
+        url = url+"?userid="+userAccount+"&password="+password; //TODO
+//        url = url+"?userid="+"xiaowang"+"&password=yyf123456"; //TODO
         Log.d(TAG, url);
         initView();
     }

@@ -1,5 +1,8 @@
 package com.byod;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -24,6 +27,8 @@ import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
 import com.byod.utils.PolicyUtils;
+import com.byod.utils.RightUtil;
+import com.google.gson.JsonObject;
 
 /**
  * @author ifay 认证界面 1.完成对用户的认证 2.检查设备合规性 3.提供随机键盘
@@ -201,6 +206,15 @@ public class AuthenticateActivity extends Activity {
             if (authResult == 1) {
                 CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, account);
                 handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
+                // store password and keyboard labels
+                try {
+                    JSONObject json =new JSONObject(keyboardJson);
+                    String labels = json.getString("label");
+                    String pwdOrg = RightUtil.translatePassword(password, keyboardJson);
+                    CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_PASSWORD, pwdOrg);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             } else if (authResult == 0) {
                 handler.sendEmptyMessage(MSG_AUTH_FAILED);
             }

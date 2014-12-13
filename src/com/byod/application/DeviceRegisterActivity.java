@@ -1,5 +1,8 @@
 package com.byod.application;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -306,16 +309,25 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
-    //【完成注册】 保存userAccount，并跳转进入Homescreen
+    //【完成注册】 保存userAccount,pwd，并跳转进入Homescreen
     View.OnClickListener finishRegisteration = new View.OnClickListener() {
         
         @Override
         public void onClick(View v) {
-            boolean rst;
-            CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, userAccount);
-            Intent i = new Intent(mActivity, HomeScreen.class);
-            i.putExtra("isLoggedIn", true);
-            startActivity(i);
+            try {
+                JSONObject json = new JSONObject(keyboardJson);
+                String labels = json.getString("label");
+                String pwdOrg = RightUtil.translatePassword(pwdET.getText().toString(), labels);
+                CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_PASSWORD, pwdOrg);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally {
+                CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, userAccount);
+                Intent i = new Intent(mActivity, HomeScreen.class);
+                i.putExtra("isLoggedIn", true);
+                startActivity(i);
+            }
+            
         }
     };
 
