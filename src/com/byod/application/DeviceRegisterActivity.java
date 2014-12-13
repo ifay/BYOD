@@ -9,6 +9,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
 import com.byod.utils.KeyboardUtil;
 import com.byod.utils.PolicyUtils;
+import com.byod.utils.RightUtil;
 
 /**
  * @author ifay 
@@ -35,8 +37,7 @@ public class DeviceRegisterActivity extends Activity {
 
     private static final String TAG = "DeviceRegisterActivity";
 
-    private static final int MSG_FIRST_DEVICE = 1000;   // 用户名下没有设备，进行用户注册
-    private static final int MSG_NOT_FIRST_DEVICE = 1001;
+    private static final int MSG_START_REGISTER = 1001;
     //增添设备，需要由其他已注册的设备确认。其他设备每次认证通过进入HomeScreen的时候去服务器查询下是否有需要处理的设备
     private static final int MSG_SYNC_POLICY_FAIL = 2002;
     private static final int MSG_POLICY_PASS = 3000;
@@ -56,10 +57,13 @@ public class DeviceRegisterActivity extends Activity {
     private EditText userAccountET = null;
     private EditText pwdET = null;
     private Button nextBt = null;
+    private Button getKeyboardBtn = null;
     private static KeyboardUtil keyboard = null;
     private String userAccount = "";
     private String userPwd = "";
+    private boolean mIsFirstDevice = false;
 
+    private String keyboardJson;
 
     private Handler handler = new Handler() {
 
@@ -68,15 +72,11 @@ public class DeviceRegisterActivity extends Activity {
             int what = msg.what;
             Intent i;
             switch (what) {
-                case MSG_NOT_FIRST_DEVICE:
+                case MSG_START_REGISTER:
                     //sync policy
                     nextBt.setText("同步最新安全策略并检测");
                     nextBt.setOnClickListener(syncAndCheckPolicy);
                     break;
-                case MSG_FIRST_DEVICE:
-                    //register user page
-                    nextBt.setText("用户首次通过设备登录\n点击进行用户信息完善");
-                    nextBt.setOnClickListener(userInfoComplete);
                 case MSG_SYNC_POLICY_FAIL:
                     nextBt.setText("策略同步失败 请重试");
                     nextBt.setOnClickListener(syncAndCheckPolicy);
@@ -84,12 +84,12 @@ public class DeviceRegisterActivity extends Activity {
                 case MSG_POLICY_FAIL:
                     Bundle data = msg.getData();
                     String reason = data.getString(POLICY_FAIL_REASON);
-                    nextBt.setText("安全策略检测"+reason+"未通过\n点击退出");
+                    nextBt.setText("安全策略检测"+reason+"未通过\n注册失败");
                     nextBt.setOnClickListener(exit);
                     break;
                 case MSG_POLICY_PASS:
                     //send register device request
-                    nextBt.setText("策略检测通过\n向其他设备发送注册请求");
+                    nextBt.setText("策略检测通过\n发送注册请求");
                     nextBt.setOnClickListener(sendRegReqToPeer);
                     break;
                 case MSG_REGISTER_APPROVED:
@@ -97,7 +97,7 @@ public class DeviceRegisterActivity extends Activity {
                     nextBt.setOnClickListener(finishRegisteration);
                     break;
                 case MSG_REGISTER_DECLINED:
-                    nextBt.setText("注册失败，点击退出");
+                    nextBt.setText("注册未通过，点击退出");
                     nextBt.setOnClickListener(exit);
                     break;
                 case MSG_REGISTER_REQUEST_SENT:
@@ -120,7 +120,7 @@ public class DeviceRegisterActivity extends Activity {
                 case MSG_AUTH_USER_LOGOFF:
                     //用户已注销，无法再次登录，设备上的相关信息擦除
                     Toast.makeText(mActivity, "该用户已注销，BYOD将安全退出", Toast.LENGTH_LONG).show();
-//                    BYODApplication.getInstance().exit();
+                    BYODApplication.getInstance().exit();
                     break;
                 default:
                     break;
@@ -138,14 +138,14 @@ public class DeviceRegisterActivity extends Activity {
         initView();
     }
 
-    //【下一步】按钮功能：验证用户名密码,获取用户名下设备数目
+    //【下一步】按钮功能：获取用户名下设备数目(验证用户名、密码)
     View.OnClickListener checkUserDeviceListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             userAccount = userAccountET.getText().toString().trim();
             userPwd = pwdET.getText().toString().trim();
-            if (userAccount.length() == 0 || userPwd.length() == 0) {
-                Toast.makeText(mActivity, "用户名或密码为空！", Toast.LENGTH_SHORT).show();
+            if (userPwd.length() == 0) {
+                Toast.makeText(mActivity, "密码为空！", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -153,13 +153,14 @@ public class DeviceRegisterActivity extends Activity {
             int deviceNum;
             try {
                 deviceNum = DeviceUtils.getUserDeviceNum(userAccount, userPwd);
-                if (deviceNum < 0) {
+                if (deviceNum == -1) {
                     Log.d(TAG,"deviceNum is "+deviceNum);
-                    handler.sendEmptyMessage(MSG_AUTH_USER_LOGOFF);    ///////TODO MSG_AUTH_FAIL
-                } else if (deviceNum == 0) {
-                    handler.sendEmptyMessage(MSG_FIRST_DEVICE);
+                    handler.sendEmptyMessage(MSG_AUTH_FAIL);    ///////TODO MSG_AUTH_FAIL
+                } else if (deviceNum == -2) {
+                    handler.sendEmptyMessage(MSG_AUTH_USER_LOGOFF); //用户已注销，清除数据，退出系统
                 } else {
-                    handler.sendEmptyMessage(MSG_NOT_FIRST_DEVICE);
+                    mIsFirstDevice = (deviceNum == 0) ;
+                    handler.sendEmptyMessage(MSG_START_REGISTER);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -167,6 +168,42 @@ public class DeviceRegisterActivity extends Activity {
         }
     };
 
+    //【获取键盘】
+    private OnClickListener getKeyboard = new View.OnClickListener() {
+        
+        @Override
+        public void onClick(View v) {
+            String userAccount = userAccountET.getText().toString();
+            if (userAccount == null || userAccount.length() < 1) {
+                Toast.makeText(mActivity, "请输入用户名", Toast.LENGTH_SHORT).show();
+                return ;
+            }
+            
+            //1. new keyboard
+            if (keyboard == null) {
+                keyboard = new KeyboardUtil(mActivity, mActivity, pwdET, R.id.keyboard_view);
+            }
+            
+            //2. get keyboard from server
+            try {
+                keyboardJson = keyboard.getRandomKeyboard(userAccount.trim());
+                if (keyboardJson.length() < 1) {
+                    Toast.makeText(mActivity, "键盘获取失败，请重试", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    v.setVisibility(View.GONE);
+                    //3. show password edittext
+                    pwdET.setVisibility(View.VISIBLE);
+                }
+            } catch (Exception e) {
+                Toast.makeText(mActivity, "键盘获取失败，请重试", Toast.LENGTH_SHORT).show();
+                return ;
+            }
+
+        }
+    };
+
+    
     //【完善用户信息】
     View.OnClickListener userInfoComplete = new View.OnClickListener() {
 
@@ -178,27 +215,31 @@ public class DeviceRegisterActivity extends Activity {
     };
 
 
-    //【同步并检测最新安全策略】
+    //【同步最新安全策略】
     View.OnClickListener syncAndCheckPolicy = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
             String rst;
             try {
-                PolicyUtils.getDevicePolicy(mActivity, userAccount);
+                PolicyUtils.getDevicePolicyByUser(mActivity, userAccount);
                 rst = PolicyUtils.checkPolicy(mActivity);
                 if (rst == null) {
                     handler.sendEmptyMessage(MSG_POLICY_PASS);
                 } else {
+                    handler.sendEmptyMessage(MSG_POLICY_FAIL);
+                    
                     Message msg = new Message();
                     msg.what = MSG_POLICY_FAIL;
                     Bundle data = new Bundle();
                     data.putString(POLICY_FAIL_REASON, rst);
                     msg.setData(data);
                     handler.sendMessage(msg);
+                    
                 }
             } catch (Exception e) {
-                handler.sendEmptyMessage(MSG_SYNC_POLICY_FAIL);
+//                handler.sendEmptyMessage(MSG_POLICY_PASS);
+                 handler.sendEmptyMessage(MSG_SYNC_POLICY_FAIL);
                 e.printStackTrace();
             }
         }
@@ -225,10 +266,16 @@ public class DeviceRegisterActivity extends Activity {
         @Override
         public void onClick(View v) {
             boolean rst;
+            String userAccount = userAccountET.getText().toString().trim();
             try {
-                rst = DeviceUtils.getInstance(mActivity).registerDevice(mActivity, true);
+                rst = DeviceUtils.getInstance(mActivity).registerDevice(mActivity, mIsFirstDevice, userAccount);
                 if (rst ==CommonUtils.SUCCESS) {
-                    handler.sendEmptyMessage(MSG_REGISTER_REQUEST_SENT);
+                    if ( mIsFirstDevice ) {
+                        handler.sendEmptyMessage(MSG_REGISTER_APPROVED);
+                        return;
+                    } else {
+                        handler.sendEmptyMessage(MSG_REGISTER_REQUEST_SENT);
+                    }
                 } else {
                     handler.sendEmptyMessage(MSG_REGISTER_REQUEST_SENT_FAILED);
                 }
@@ -243,11 +290,13 @@ public class DeviceRegisterActivity extends Activity {
         
         @Override
         public void onClick(View v) {
-            boolean approved;
+            int approved;
             try {
                 approved = DeviceUtils.getInstance(mActivity).checkRegRequestApproved();
-                if (approved == CommonUtils.SUCCESS) {
+                if (approved == 1) {
                     handler.sendEmptyMessage(MSG_REGISTER_APPROVED);
+                } else if (approved == 0) {
+                    handler.sendEmptyMessage(MSG_REGISTER_REQUEST_SENT);    //点击刷新
                 } else {
                     handler.sendEmptyMessage(MSG_REGISTER_DECLINED);
                 }
@@ -276,33 +325,42 @@ public class DeviceRegisterActivity extends Activity {
         @Override
         public void onClick(View v) {
             //1.clear all Policy local
-            PolicyUtils.deleteLocalPolicy(mActivity);
+            CommonUtils.deleteLocalPolicy(mActivity);
             BYODApplication.getInstance().exit();
         }
     };
 
-    //keyboard
+    //use custom keyboard
     View.OnTouchListener showKeyboard = new View.OnTouchListener() {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             int inputType = ((EditText)v).getInputType();
             ((EditText)v).setInputType(InputType.TYPE_NULL);
-            if (keyboard == null) {
-                keyboard = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
+            
+            String userAccount = userAccountET.getText().toString();
+            try {
+                keyboard.showRandomKeyboard(keyboardJson);
+                keyboard.showKeyboard();
+            } catch (Exception e) {
+                Toast.makeText(mActivity, "键盘加载失败，请重试", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
-            keyboard.showKeyboard();
+            
             ((EditText)v).setInputType(inputType);
             return false;
         }
     };
 
+
     private void initView() {
         userAccountET = (EditText) findViewById(R.id.userAccount);
         nextBt = (Button) findViewById(R.id.next);
+        getKeyboardBtn = (Button) findViewById(R.id.getKeyboard);
         pwdET = (EditText) findViewById(R.id.pwd);
         pwdET.setOnTouchListener(showKeyboard);
         nextBt.setOnClickListener(checkUserDeviceListener);
+        getKeyboardBtn.setOnClickListener(getKeyboard);
     }
 
     @Override

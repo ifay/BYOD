@@ -31,9 +31,9 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive intent "+intent.getAction());
         //start service if not first install BYOD
-        if (PolicyUtils.getLatestPolicyTime(context, 0L) != 0L) {////////TODO should be !=
+        if (CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, null) != null) {
             deviceID = DeviceUtils.getInstance(context).getsDeviceIdSHA1();
-            //start polling service
+            //start polling peer request service
             if (pollingIntent == null) {
                 pollingIntent = new Intent(context,PollingService.class);
                 pollingIntent.setAction(CommonUtils.ACTION_POLL_SERVICE);
@@ -41,7 +41,6 @@ public class BootReceiver extends BroadcastReceiver {
             }
             PollingUtils.startPollingService(context, CommonUtils.POLL_PEER, pollingIntent);
         }
-        //TODO start msg & phone listener
     }
 
 }

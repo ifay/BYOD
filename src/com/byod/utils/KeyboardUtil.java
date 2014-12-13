@@ -99,7 +99,6 @@ public class KeyboardUtil {
                     break;
                 default:
                     editable.insert(start, String.valueOf((char) primaryCode));
-                    randomKey();
                     break;
             }
         }
@@ -156,6 +155,9 @@ public class KeyboardUtil {
         List<Key> newkeyList = new ArrayList<Key>();
         //获得待随机化的key序列
         keyList = kChar.getKeys();
+//        for (int i = 0; i< keyList.size(); i++) {
+//            Log.d(TAG,""+keyList.get(i).codes[0]);
+//        }
         for (int i = 0; i < keyList.size(); i++) {
             if (keyList.get(i).label != null && isWordKey(keyList.get(i))) {
                 newkeyList.add(keyList.get(i));
@@ -220,7 +222,7 @@ public class KeyboardUtil {
     
     /**
      * 从服务器获取数据JSON格式
-     * {"KBID":"","label":["1":"49".....],"code":[]}
+     * {"KBID":"","label":["1":"49".....]}
      * @return
      * @throws Exception
      */
@@ -241,41 +243,57 @@ public class KeyboardUtil {
         try {
             result = future.get();
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw e;
         } catch (ExecutionException e) {
+            e.printStackTrace();
             throw e;
         }
+        Log.d(TAG,"getRandomKeyboard result:"+result);
         return result;
     }
     
     /**
      * 根据服务器传回的键盘布局数据 解析显示。
+     * 只对label进行了随机化，codes固定
      * @param keyboardJson
      * 返回值是什么？
      */
     public void showRandomKeyboard(String keyboardJson) throws Exception {
+        Log.d(TAG,"showRandomKeyboard---starts");
         //1.parase json
         if (keyboardJson.length() < 1) {
             throw new Exception("empty JSON");
         }
 
-        JSONArray labelArr;
-        JSONArray codeArr;
+        String labelArr;
 
         try {
             JSONObject keyboard = new JSONObject(keyboardJson);
             sKbID = keyboard.getString("KBID");
-            labelArr = keyboard.getJSONArray("label");
-            codeArr = keyboard.getJSONArray("code");
-
+            labelArr = keyboard.getString("label");
+            Log.d(TAG,"kbID:"+sKbID + "---label:" + labelArr);
             List<Key> keyList = kChar.getKeys();
-            for(int i = 0 ; i < keyList.size() ; i++) {
-                keyList.get(i).label = (CharSequence)labelArr.getString(i);
-                keyList.get(i).codes[0] = Integer.parseInt(codeArr.getString(i).trim());
+            for (int i = 0; i < keyList.size(); i++) {
+                Log.d(TAG,  keyList.get(i).label+"-" + keyList.get(i).codes[0]);
             }
+            
+            for(int i = 0 ,j=0; i < labelArr.length() ; j++) {
+                if (j == 29) {
+                    continue;
+                }
+                keyList.get(j).label =String.valueOf( labelArr.charAt(i));///char to charsequence????
+                i++;
+            }
+            
+            for (int i = 0; i < keyList.size(); i++) {
+                Log.d(TAG,  keyList.get(i).label+"-" + keyList.get(i).codes[0]);
+            }
+            
             //2. show
             keyboardView.setKeyboard(kChar);
         } catch (JSONException e) {
+            e.printStackTrace();
             throw e;
         }
     }

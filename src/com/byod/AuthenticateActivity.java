@@ -37,9 +37,11 @@ public class AuthenticateActivity extends Activity {
 
     public Intent intent = null;
     private Button commit;
+    private Button getKeyboardBtn;
     private EditText passwdView;
     private EditText accountView;
     private KeyboardUtil keyboardUtil;
+    private String keyboardJson;
     private static int sAuthFailTime = 0;
 
     private AuthenticateActivity mActivity;
@@ -48,6 +50,7 @@ public class AuthenticateActivity extends Activity {
     private static final int MSG_NOT_COMPLIANCED = 1001; // 合规性检测失败
     private static final int MSG_AUTH_SUCCESS = 2000;
     private static final int MSG_AUTH_FAILED = 2001; // 认证失败
+    private static final int MSG_AUTH_USER_DELETED = 2002;  //用户已注销
 
     private Handler handler = new Handler() {
         @Override
@@ -74,22 +77,21 @@ public class AuthenticateActivity extends Activity {
                     // 认证成功
                     Log.d(TAG, "MSG_AUTH_SUCCESS");
                     BYODApplication.loggedIn = true;
-                    intent = getIntent();
-//                    if (intent.getPackage() == null) {
-                        i = new Intent(mActivity, HomeScreen.class);
-                        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);
-//                    } else {
-//                        intent.putExtra("AuthResult", CommonUtils.SUCCESS);
-//                        setResult(Activity.RESULT_OK, intent);
-//                        mActivity.finish();
-//                    }
+                    i = new Intent(mActivity, HomeScreen.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
                     break;
                 case MSG_AUTH_FAILED:
                     // 用户认证失败
                     Log.d(TAG, "MSG_AUTH_USER_FAILED");
                     sAuthFailTime += 1;
                     popLockUserDialog();
+                    break;
+                case MSG_AUTH_USER_DELETED:
+                    // 用户已删除
+                    Log.d(TAG, "MSG_AUTH_USER_DELETED");
+                    Toast.makeText(mActivity, "用户已注销,应用退出", Toast.LENGTH_LONG).show();
+                    BYODApplication.getInstance().exit();
                     break;
                 default:
                     break;
@@ -104,14 +106,51 @@ public class AuthenticateActivity extends Activity {
         Log.d(TAG, "onCreate");
         setContentView(R.layout.authenticate);
         this.mActivity = this;
+        BYODApplication.getInstance().addActivity(this);
         commit = (Button) findViewById(R.id.commit);
+        getKeyboardBtn = (Button) findViewById(R.id.getKeyboard);
         passwdView = (EditText) findViewById(R.id.passwd);
         accountView = (EditText) findViewById(R.id.account);
         passwdView.setOnTouchListener(onTouchListener);
         commit.setEnabled(false);
         commit.setOnClickListener(login);
+        getKeyboardBtn.setOnClickListener(getKeyboard); 
     }
 
+    //【获取键盘】
+    private OnClickListener getKeyboard = new View.OnClickListener() {
+        
+        @Override
+        public void onClick(View v) {
+            String userAccount = accountView.getText().toString();
+            if (userAccount == null || userAccount.length() < 1) {
+                Toast.makeText(mActivity, "请输入用户名", Toast.LENGTH_SHORT).show();
+                return ;
+            }
+            
+            //1. new keyboard
+            if (keyboardUtil == null) {
+                keyboardUtil = new KeyboardUtil(mActivity, mActivity, passwdView, R.id.keyboard_view);
+            }
+            
+            //2. get keyboard from server
+            try {
+                keyboardJson = keyboardUtil.getRandomKeyboard(userAccount.trim());
+                if (keyboardJson.length() < 1) {
+                    Toast.makeText(mActivity, "键盘获取失败，请重试", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    v.setVisibility(View.GONE);
+                    //3. show password edittext
+                    passwdView.setVisibility(View.VISIBLE);
+                }
+            } catch (Exception e) {
+                Toast.makeText(mActivity, "键盘获取失败，请重试", Toast.LENGTH_SHORT).show();
+                return ;
+            }
+        }
+    };
+    
     // 【密码框】EditText
     private OnTouchListener onTouchListener = new OnTouchListener() {
 
@@ -123,9 +162,22 @@ public class AuthenticateActivity extends Activity {
             if (keyboardUtil == null) {
                 keyboardUtil = new KeyboardUtil(mActivity, mActivity, (EditText) v, R.id.keyboard_view);
             }
-            keyboardUtil.showKeyboard();
-            ((EditText) v).setInputType(inputType);
+            String userAccount = accountView.getText().toString();
+            if (userAccount == null || userAccount.length() < 1) {
+                Toast.makeText(mActivity, "请输入用户名", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            try {
+                keyboardUtil.showRandomKeyboard(keyboardJson);
+                keyboardUtil.showKeyboard();
+            } catch (Exception e) {
+                Toast.makeText(mActivity, "键盘加载失败，请重试", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+            
+            ((EditText)v).setInputType(inputType);
             return false;
+            
         }
     };
 
@@ -135,23 +187,25 @@ public class AuthenticateActivity extends Activity {
         @Override
         public void onClick(View v) {
 
-            //1. 对于password的字符进行加密运算
             final String password = passwdView.getText().toString().trim();
             final String account = accountView.getText().toString().trim();
-            //TODO 取消注释
-//            if (password.length() < 1 || account.length() < 1) {
-//                Toast.makeText(mActivity, "请输入用户名或密码", Toast.LENGTH_SHORT).show();
-//                return;
-//            }
+
+            if (password.length() < 1) {
+                Toast.makeText(mActivity, "请输入密码", Toast.LENGTH_SHORT).show();
+                return;
+            }
             final String deviceID = DeviceUtils.getInstance(mActivity).getsDeviceIdSHA1();
-            final String passwordCrypted = CommonUtils.cryptMD5(password);
 
             //2. authenticate the user and device
-            if (AuthUtils.login(account, passwordCrypted, deviceID) == CommonUtils.SUCCESS) {
+            int authResult = AuthUtils.login(account, password, deviceID);
+            if (authResult == 1) {
                 CommonUtils.setPrefString(mActivity, CommonUtils.PREF_KEY_USERACCOUNT, account);
                 handler.sendEmptyMessage(MSG_AUTH_SUCCESS);
-            } else {
+            } else if (authResult == 0) {
                 handler.sendEmptyMessage(MSG_AUTH_FAILED);
+            }
+            else {
+                handler.sendEmptyMessage(MSG_AUTH_USER_DELETED);
             }
         }
     };

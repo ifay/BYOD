@@ -29,7 +29,7 @@ public class WebConnectCallable implements Callable {
     
     @Override
     public Object call() throws Exception {
-        HttpTransportSE ht = new HttpTransportSE(url);
+        HttpTransportSE ht = new HttpTransportSE(url,60000);
         ht.debug = true;
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         SoapObject request = new SoapObject(nameSpace, method);

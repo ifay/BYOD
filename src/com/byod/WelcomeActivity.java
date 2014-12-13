@@ -50,6 +50,7 @@ public class WelcomeActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_check);
+        BYODApplication.getInstance().addActivity(this);
         ctx = this;
         initView();
     }
@@ -183,13 +184,18 @@ public class WelcomeActivity extends Activity {
      * 如果本地有策略，则说明之前使用过，即注册过
      */
     private boolean checkRegistered(){
-        if (PolicyUtils.getLatestPolicyTime(ctx, 0L) == 0L) {
-            handler.sendEmptyMessage(MSG_DEV_NOT_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
-            return false;
-        } else {
-            handler.sendEmptyMessage(MSG_DEV_REGISTERED);
-            return true;
+        boolean isDeviceRegistered = false;
+        try {
+            isDeviceRegistered = DeviceUtils.getInstance(ctx).isDeviceRegistered();
+            if (isDeviceRegistered) {
+                handler.sendEmptyMessage(MSG_DEV_REGISTERED);
+            } else {
+                handler.sendEmptyMessage(MSG_DEV_NOT_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return isDeviceRegistered;
     }
 
     /**
