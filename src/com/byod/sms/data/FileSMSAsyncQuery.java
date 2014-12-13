@@ -16,6 +16,16 @@ class FileSMSAsyncQuery implements IAsyncQuery{
     }
 
     @Override
+    public void startDelete() {
+
+    }
+
+    @Override
+    public void startDelete(int id) {
+
+    }
+
+    @Override
     public void startInsert(ContentValues values) {
 
     }

@@ -3,6 +3,8 @@ package com.byod.data;
 import android.content.ContentValues;
 
 public interface IAsyncQuery {
-    public void startQuery();
-    public void startInsert(ContentValues values);
+    void startQuery();
+    void startDelete();
+    void startDelete(int id);
+    void startInsert(ContentValues values);
 }

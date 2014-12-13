@@ -1,6 +1,7 @@
 package com.byod.sms.data;
 
 import android.content.AsyncQueryHandler;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
 
@@ -29,6 +30,18 @@ public class LocalSMSAsyncQuery implements IAsyncQuery{
         }; // 查询的列
         mAsyncQueryHandler.startQuery(0, null, uri, projection, null, null,
                 "date COLLATE LOCALIZED asc"); // 按照sort_key升序查询
+    }
+
+    @Override
+    public void startDelete() {
+        Uri uri = ContactsContentProvider.SMS_URI;
+        mAsyncQueryHandler.startDelete(0, null, uri, null, null);
+    }
+
+    @Override
+    public void startDelete(int id) {
+        Uri uri = ContentUris.withAppendedId(ContactsContentProvider.SMS_URI, id);
+        mAsyncQueryHandler.startDelete(0, null, uri, null, null);
     }
 
     @Override

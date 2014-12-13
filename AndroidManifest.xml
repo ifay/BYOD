@@ -193,10 +193,8 @@
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <intent-filter>
-                <!--  
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                -->
                 <data android:mimeType="vnd.android.cursor.dir/person" />
                 <data android:mimeType="vnd.android.cursor.dir/contact" />
             </intent-filter>
@@ -240,6 +238,7 @@
             android:name="com.byod.PhoneTabHostAcitivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
+            android:process=":contacts"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
             <!-- 
             <intent-filter>
@@ -253,30 +252,35 @@
         <activity
             android:name="com.byod.sms.activities.MessageBoxList"
             android:screenOrientation="portrait"
+            android:process=":contacts"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
             android:name="com.byod.sms.activities.NewSMSActivity"
             android:screenOrientation="portrait"
+            android:process=":contacts"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustResize" >
         </activity>
         <activity
             android:name="com.byod.sms.activities.SelectContactsToSendActivity"
             android:screenOrientation="portrait"
+            android:process=":contacts"
             android:windowSoftInputMode="adjustUnspecified|stateHidden|adjustPan" >
         </activity>
 
-        <service android:name="com.byod.dial.service.T9Service" />
+        <service android:name="com.byod.dial.service.T9Service"
+            android:process=":contacts"/>
 
         <provider
             android:name="com.byod.data.db.ContactsContentProvider"
             android:authorities="com.byod"
+            android:process=":contacts"
             android:enabled="true"
             android:exported="false" >
         </provider>
 
         <service android:name="com.byod.sms.service.SMSObserverService"
-            android:process=":sms"/>
+            android:process=":contacts"/>
     </application>
 
 </manifest>
