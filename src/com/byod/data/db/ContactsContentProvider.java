@@ -45,8 +45,32 @@ public class ContactsContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // Implement this to handle requests to delete one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int count = 0;
+        switch (mUriMatcher.match(uri)) {
+            case CONTACTS_ITEM:
+                count = db.delete(DatabaseHelper.Tables.CONTACTS_TABLE, selection, selectionArgs);
+                break;
+            case SMS_ITEM:
+                count = db.delete(DatabaseHelper.Tables.SMS_TABLE, selection, selectionArgs);
+                break;
+            case CONTACTS_ITEM_ID:
+                String id = uri.getPathSegments().get(1);
+                count = db.delete(DatabaseHelper.Tables.CONTACTS_TABLE,
+                        DatabaseHelper.ContactsColumns._ID + "=" + id + (!TextUtils.isEmpty(selection) ?
+                                " and (" + selection + ")" : ""), selectionArgs);
+                break;
+            case SMS_ITEM_ID:
+                String sid = uri.getPathSegments().get(1);
+                count = db.delete(DatabaseHelper.Tables.CONTACTS_TABLE,
+                        DatabaseHelper.ContactsColumns._ID + "=" + sid + (!TextUtils.isEmpty(selection) ?
+                                " and (" + selection + ")" : ""), selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Error Uri: " + uri);
+        }
+        mResolver.notifyChange(uri, null);
+        return count;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.byod.contacts.data;
 
 import android.content.AsyncQueryHandler;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +36,18 @@ public class LocalContactsAsyncQuery implements IAsyncQuery{
         }; // 查询的列
         mAsyncQueryHandler.startQuery(0, null, uri, projection, null, null,
                 "sort_key COLLATE LOCALIZED asc"); // 按照sort_key升序查询
+    }
+
+    @Override
+    public void startDelete() {
+        Uri uri = ContactsContentProvider.CONTACTS_URI;
+        mAsyncQueryHandler.startDelete(0, null, uri, null, null);
+    }
+
+    @Override
+    public void startDelete(int id) {
+        Uri uri = ContentUris.withAppendedId(ContactsContentProvider.CONTACTS_URI, id);
+        mAsyncQueryHandler.startDelete(0, null, uri, null, null);
     }
 
     @Override
