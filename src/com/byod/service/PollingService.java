@@ -9,18 +9,26 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.byod.PeerDeviceApproveActivity;
 import com.byod.R;
+import com.byod.contacts.data.ContactsAsyncQueryFactory;
+import com.byod.data.IAsyncQuery;
+import com.byod.data.IAsyncQueryHandler;
+import com.byod.sms.data.SMSAsyncQueryFactory;
 import com.byod.utils.CommonUtils;
 import com.byod.utils.DeviceUtils;
+import com.byod.utils.PolicyUtils;
 
 /**
  * @author ifay
  */
-public class PollingService extends Service {
+public class PollingService extends Service implements IAsyncQueryHandler{
 
     public static final String TAG = "PollingService";
     public static final String ACTION = CommonUtils.ACTION_POLL_SERVICE;
@@ -45,9 +53,28 @@ public class PollingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        deviceID = intent.getExtras().getString("DeviceID");
-//        Log.d(TAG, "getIntent deviceID is:"+deviceID);
-        new PollingThread().start();
+        new PollingPeerThread().start();
+        new PollingPolicyThread().start();
+        try {
+            //查询设备擦除命令
+            boolean isDeviceErased = DeviceUtils.isDeviceErased();
+            if (isDeviceErased) {
+                Log.d(TAG, "is erased");
+                //删除local数据
+                //1.sharedPreference data
+                CommonUtils.deleteLocalPolicy(getApplicationContext());
+                //2. sqlite data--Contacts and SMS
+                ContactsAsyncQueryFactory mContactsAsyncQueryFactory = new ContactsAsyncQueryFactory(getApplicationContext(), this);
+                IAsyncQuery contactsQuery = mContactsAsyncQueryFactory.getLocalAsyncQuery();
+                contactsQuery.startDelete();
+                SMSAsyncQueryFactory mSMSAsyncQueryFactory = new SMSAsyncQueryFactory(getApplicationContext(), this);
+                IAsyncQuery smsQuery = mSMSAsyncQueryFactory.getLocalAsyncQuery();
+                smsQuery.startDelete();
+                //3. exit application if running///not necessiary
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -77,30 +104,78 @@ public class PollingService extends Service {
         mManager.notify(0, mNotification);
     }
 
+    // 弹出安全策略不符合的Toast
+    private void showPolicyNotification(String policyCheckRst) {
+        Log.d(TAG,"policy "+policyCheckRst+"not complianced");
+//        Toast.makeText(getApplicationContext(), "策略"+policyCheckRst+"未通过! 应用退出", 
+//                Toast.LENGTH_LONG).show();
+        /////////////////////TODO how to exit application securely
+    }
+
     /**
      * Polling thread 模拟向Server轮询的异步线程
      */
-    int count = 0;
-
-    class PollingThread extends Thread {
+    class PollingPeerThread extends Thread {
         @Override
         public void run() {
-            //向server查询是否有peer device,返回devieID，deviceName | null
             String[] peerInfo = null;
             try {
+                //1. 向server查询是否有peer device,返回devieID，deviceName | null
                 peerInfo = DeviceUtils.queryPeerDevices();
                 if (peerInfo != null) {
                     showPeerDeviceNotification(peerInfo);
                 }
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
 
+    class PollingPolicyThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                //2. 查询服务器安全策略是否有更新
+                boolean isNewestPolicy = PolicyUtils.localPolicyIsNewest(getApplicationContext(), DeviceUtils.PseudoID);
+                if ( !isNewestPolicy) {
+                    PolicyUtils.getDevicePolicy(getApplicationContext(), DeviceUtils.PseudoID);
+                    String policyCheckRst = PolicyUtils.checkPolicy(getApplicationContext());
+                    if (policyCheckRst != null) {
+                        //某条策略未通过
+                        showPolicyNotification(policyCheckRst);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onQueryComplete(int token, Object cookie, Cursor cursor) {
+    }
+
+    @Override
+    public void onDeleteComplete(int token, Object cookie, int result) {
+        try {
+            DeviceUtils.deleteOperationFinished();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //暂不实现
+    }
+
+    @Override
+    public void onUpdateComplete(int token, Object cookie, int result) {
+    }
+
+    @Override
+    public void onInsertComplete(int token, Object cookie, Uri uri) {
     }
 }

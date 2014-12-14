@@ -440,6 +440,7 @@ public class NewSMSActivity extends Activity {
                 if (list.size() > 0) {
                     setAdapter(list);
                 }
+                cursor.close();
             }
         }
     }

@@ -112,7 +112,9 @@ public class PeopleActivity extends Activity implements  IAsyncQueryHandler{
                     contactIdMap.put(contactId, cb);
                 }
             }
-            cursor.close();
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
             if (list.size() > 0) {
                 setAdapter(list);
             }

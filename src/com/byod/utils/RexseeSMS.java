@@ -100,6 +100,7 @@ public class RexseeSMS {
                 rtn += ",\"service_center\":" + cursor.getString(8);
                 rtn += "}";
             }
+            cursor.close();
             return "[" + rtn + "]";
         } catch (Exception e) {
             return "[]";
@@ -122,6 +123,7 @@ public class RexseeSMS {
                 SMSBean mmt = new SMSBean(cursor.getString(0), cursor.getString(1), cursor.getString(2));
                 list.add(mmt);
             }
+            cursor.close();
             return list;
         } catch (Exception e) {
             return list;
@@ -142,6 +144,7 @@ public class RexseeSMS {
             mmt.setDate(cursor.getLong(4));
             mmt.setRead(cursor.getString(6));
             list.add(mmt);
+            cursor.close();
         }
 
         return list;

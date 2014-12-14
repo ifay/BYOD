@@ -173,6 +173,7 @@ public class MessageBoxList extends Activity implements IAsyncQueryHandler {
                     }
                 }
             }
+            cursor.close();
             if (list.size() > 0) {
                 mAdapter = new MessageBoxListAdapter(MessageBoxList.this, list);
                 talkView.setAdapter(mAdapter);

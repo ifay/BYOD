@@ -66,6 +66,8 @@ public class MAsyncTask extends AsyncTask<Cursor, Void, ArrayList<ContactBean>> 
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                cursor.close();
             }
         }
         return ciList;

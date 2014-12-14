@@ -308,4 +308,30 @@ public class PolicyUtils {
         return prefs.getLong(PREF_DEVICE_POLICY_TIME, defValue);
     }
 
+    /**
+     * @throws Exception 
+     * 
+     */
+    public static Long getDevicePolicyTime(String deviceID) throws Exception {
+        // TODO Auto-generated method stub
+        PropertyInfo[] property = new PropertyInfo[1];
+        property[0] = new PropertyInfo();
+        property[0].setName("deviceID");
+        property[0].setValue(deviceID);
+        property[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "getDevicePolicyTime", property);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            return Long.parseLong(result);
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
+    }
+
 }

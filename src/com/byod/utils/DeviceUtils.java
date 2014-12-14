@@ -510,8 +510,52 @@ public class DeviceUtils {
         return connectMgr.getNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH).isAvailable();
     }
 
+    public static boolean isDeviceErased() throws Exception {
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(PseudoID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "isDeviceErased", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+            Log.d(TAG,"is erased: "+result);
+            return result.equals("true");
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
+    }
 
-    
-    
+    /**
+     * @throws Exception 
+     * 
+     */
+    public static void deleteOperationFinished() throws Exception {
+        PropertyInfo[] propertyInfo = new PropertyInfo[1];
+        propertyInfo[0] = new PropertyInfo();
+        propertyInfo[0].setName("deviceID");
+        propertyInfo[0].setValue(PseudoID);
+        propertyInfo[0].setType(PropertyInfo.STRING_CLASS);
+        WebConnectCallable task = new WebConnectCallable(
+                CommonUtils.IAM_URL, CommonUtils.IAM_NAMESPACE, "deviceEraseFinished", propertyInfo);
+        if (pool == null) {
+            pool = Executors.newCachedThreadPool();
+        }
+        Future<String> future = pool.submit(task);
+        try {
+            String result = future.get();
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
+            throw e;
+        }
+    }
  
 }

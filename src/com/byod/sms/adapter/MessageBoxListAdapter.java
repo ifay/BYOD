@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.byod.R;
 import com.byod.bean.MessageBean;
+import com.byod.utils.SimpleCrypto;
 
 import java.util.List;
 
@@ -128,7 +129,15 @@ public class MessageBoxListAdapter extends BaseAdapter {
 
                             case 1:
                                 ClipboardManager cmb = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
-                                cmb.setText(mb.getText());
+                                mb.getText();///TODO encrypt
+                                try {
+                                    String crypto = SimpleCrypto.encrypt("", mb.getText());
+                                    cmb.setText(SimpleCrypto.TAG + crypto);
+                                } catch (Exception e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                                ////////////TODO user cipher //////////////
                                 break;
                             case 2:
 

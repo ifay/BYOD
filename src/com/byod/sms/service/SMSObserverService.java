@@ -202,9 +202,15 @@ public class SMSObserverService extends Service {
                 mHandler.sendMessage(message);
             }
         }
+        if (cursor!= null && !cursor.isClosed()) {
+            cursor.close();
+        }
     }
 
     public boolean isHaveNumber(String number) {
+        if (number == null) {
+            return false;
+        }
         number = number.replaceAll("\\s", "");
         String[] projection = {ContactsColumns.DISPLAY_NAME};
         Cursor cursor = this.getContentResolver().query(
@@ -214,9 +220,14 @@ public class SMSObserverService extends Service {
                 null,
                 null);
         if (cursor == null || cursor.getCount() <= 0) {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
             return false;
         }
-
+        if (cursor != null && !cursor.isClosed()) {
+            cursor.close();
+        }
         return true;
     }
 }

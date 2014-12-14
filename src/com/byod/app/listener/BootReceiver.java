@@ -30,8 +30,9 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive intent "+intent.getAction());
+        Log.d(TAG, "pref userAccount "+ CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, null));
         //start service if not first install BYOD
-        if (CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, null) != null) {
+//        if (CommonUtils.getPrefString(context, CommonUtils.PREF_KEY_USERACCOUNT, null) != null) {
             deviceID = DeviceUtils.getInstance(context).getsDeviceIdSHA1();
             //start polling peer request service
             if (pollingIntent == null) {
@@ -40,7 +41,7 @@ public class BootReceiver extends BroadcastReceiver {
                 pollingIntent.putExtra("DeviceID", deviceID);
             }
             PollingUtils.startPollingService(context, CommonUtils.POLL_PEER, pollingIntent);
-        }
+//        }
     }
 
 }
