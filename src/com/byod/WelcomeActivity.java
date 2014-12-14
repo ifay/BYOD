@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.byod.application.DeviceRegisterActivity;
 import com.byod.utils.DeviceUtils;
@@ -193,6 +194,8 @@ public class WelcomeActivity extends Activity {
                 handler.sendEmptyMessage(MSG_DEV_NOT_REGISTERED);////////// TODO MSG_DEV_NOT_REGISTERED
             }
         } catch (Exception e) {
+            Toast.makeText(ctx, "网络连接不畅，正在重试", Toast.LENGTH_LONG).show();
+            handler.sendEmptyMessage(MSG_ADMIN_OK);
             e.printStackTrace();
         }
         return isDeviceRegistered;
@@ -212,6 +215,7 @@ public class WelcomeActivity extends Activity {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(ctx, "网络连接不畅，正在重试", Toast.LENGTH_LONG).show();
             handler.sendEmptyMessage(MSG_DEV_REGISTERED);
         }
         return isLocked;

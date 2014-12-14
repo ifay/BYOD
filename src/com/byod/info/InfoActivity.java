@@ -28,7 +28,7 @@ public class InfoActivity extends Activity{
 
     private static final String TAG = "InfoActivity";
     private InfoActivity mActivity = null;
-    private String url = CommonUtils.ONLINE_SERVER + "/INFO/logon/LogonAction.action"; 
+    private String url = CommonUtils.INFO_URL + "/logon/LogonAction.action"; 
     private String userID;
 
     private WebView infoView = null;
